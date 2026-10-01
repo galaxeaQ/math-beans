@@ -1,0 +1,3413 @@
+<!DOCTYPE html>
+<!--
+  奥数豆豆 · Math Beans（托管版）
+  iPad 上用 Safari 打开 → 分享 → 添加到主屏幕，就是一个全屏 App。
+  生成时间：2026/10/1 20:57:47
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>奥数豆豆</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="奥数豆豆">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fdf8ef">
+<meta name="description" content="四年级到五年级奥数练习，做对题目攒豆子">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<style>
+/* 奥数豆豆 — iPad 触屏优先的护眼样式 */
+
+:root {
+  --bg: #fdf8ef;
+  --card: #fffdf8;
+  --card-edge: #ecdfc8;
+  --ink: #4d4238;
+  --ink-soft: #857767;
+  --ink-faint: rgba(92, 80, 66, 0.5);
+  --accent: #f0a94a;
+  --accent-deep: #cf8420;
+  --accent-soft: #ffe8c2;
+  --good: #6bc06f;
+  --good-soft: #e4f6e4;
+  --bad: #e2836f;
+  --bad-soft: #fdeae6;
+  --shadow: rgba(120, 102, 80, 0.13);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+               "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ---------------- 主内容区 ---------------- */
+#view {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 16px calc(96px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.page.center {
+  justify-content: center;
+  min-height: 100%;
+}
+
+/* ---------------- 底部导航 ---------------- */
+#tabs {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  background: rgba(255, 253, 248, 0.97);
+  border-top: 1px solid var(--card-edge);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 20;
+}
+
+#tabs button {
+  flex: 1;
+  border: 0;
+  background: none;
+  padding: 8px 0 10px;
+  font-size: 22px;
+  line-height: 1.1;
+  color: var(--ink-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: inherit;
+  min-height: 58px;
+}
+
+#tabs button span {
+  font-size: 13px;
+}
+
+#tabs button.on {
+  color: var(--accent-deep);
+  font-weight: 700;
+}
+
+#tabs button:active {
+  background: rgba(240, 169, 74, 0.12);
+}
+
+/* ---------------- 卡片 ---------------- */
+.card {
+  background: var(--card);
+  border: 1.5px solid var(--card-edge);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 3px 10px var(--shadow);
+}
+
+.card-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--accent-deep);
+  margin-bottom: 10px;
+}
+
+.card-title.big-title {
+  font-size: 24px;
+  text-align: center;
+}
+
+.muted { color: var(--ink-soft); }
+.small { font-size: 15px; }
+
+/* ---------------- 头部豆子区 ---------------- */
+.hero {
+  background: linear-gradient(180deg, #fff6e3, #fffdf8);
+  border: 1.5px solid #f0d9ad;
+  border-radius: 22px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 4px 14px var(--shadow);
+}
+
+.hero-left { display: flex; flex-direction: column; gap: 6px; }
+.hero-label { font-size: 15px; color: var(--ink-soft); }
+.hero-right { text-align: right; display: flex; flex-direction: column; gap: 4px; }
+.hero-stat { font-size: 15px; color: var(--ink-soft); }
+
+.bean-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bean-chip .bean-num {
+  font-size: 40px;
+  font-weight: 800;
+  color: var(--accent-deep);
+  line-height: 1;
+}
+
+.bean-chip.big .bean-num { font-size: 52px; }
+
+.bean-svg { display: block; }
+
+@keyframes popnum {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+.pop { animation: popnum 0.5s ease-out; }
+
+/* ---------------- 进度条 ---------------- */
+.progress-wrap { display: flex; flex-direction: column; gap: 6px; }
+
+.progress-track {
+  height: 14px;
+  background: #f2e9d8;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.progress-track.thin { height: 9px; }
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f6c877, #f0a94a);
+  border-radius: 8px;
+  transition: width 0.35s ease;
+}
+
+.progress-fill.goal-fill { background: linear-gradient(90deg, #8ed08a, #6bc06f); }
+
+.progress-text { font-size: 14px; color: var(--ink-soft); text-align: center; }
+
+/* ---------------- 目标 ---------------- */
+.goal {
+  background: var(--good-soft);
+  border: 1.5px solid #bfe4bf;
+  border-radius: 16px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goal-head { display: flex; justify-content: space-between; font-size: 16px; }
+.goal-num { font-weight: 700; color: #4a9e4f; }
+
+/* ---------------- 按钮 ---------------- */
+button { font-family: inherit; }
+
+.btn-primary {
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f7c877, #e8a33d);
+  color: #4a3210;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 14px 20px;
+  box-shadow: 0 4px 12px rgba(200, 140, 40, 0.28);
+  width: 100%;
+}
+
+.btn-primary.big { font-size: 22px; padding: 18px 20px; border-radius: 18px; }
+.btn-primary:active { transform: translateY(1px); box-shadow: 0 2px 6px rgba(200, 140, 40, 0.3); }
+
+.btn-ghost {
+  border: 1.5px solid var(--card-edge);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-size: 17px;
+  min-height: 48px;
+}
+
+.btn-ghost.small { font-size: 15px; padding: 9px 13px; min-height: 40px; border-radius: 12px; }
+.btn-ghost:active { background: var(--accent-soft); }
+
+.btn-danger {
+  border: 1.5px solid #f0c4b8;
+  background: var(--bad-soft);
+  color: #b8523a;
+  border-radius: 12px;
+  padding: 9px 13px;
+  font-size: 15px;
+  min-height: 40px;
+}
+
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+/* ---------------- 出题设置 ---------------- */
+.opt-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.opt-label { font-size: 15px; color: var(--ink-soft); width: 42px; padding-top: 8px; flex: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+
+.chip {
+  border: 1.5px solid var(--card-edge);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 16px;
+  min-height: 42px;
+}
+
+.chip.on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-deep);
+  font-weight: 700;
+}
+
+.tip {
+  font-size: 14.5px;
+  color: var(--ink-soft);
+  background: #fdf3e0;
+  border: 1.5px solid #f2e2c4;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+/* ---------------- 做题 ---------------- */
+.quiz-head { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.tag {
+  font-size: 14px;
+  background: #eef4fb;
+  color: #4a7ba8;
+  border-radius: 10px;
+  padding: 5px 11px;
+}
+
+.tag-star { background: var(--accent-soft); color: var(--accent-deep); }
+
+.qtext {
+  background: var(--card);
+  border: 1.5px solid var(--card-edge);
+  border-radius: 18px;
+  padding: 20px 18px;
+  font-size: 23px;
+  line-height: 1.7;
+  box-shadow: 0 3px 10px var(--shadow);
+}
+
+.q-line + .q-line { margin-top: 6px; }
+
+.answer-box {
+  border-radius: 18px;
+  padding: 14px 18px;
+  background: #fff8e8;
+  border: 2px dashed #eccf9a;
+  text-align: center;
+}
+
+.answer-box.ok { background: var(--good-soft); border: 2px solid #9ed89e; }
+.answer-box.no { background: var(--bad-soft); border: 2px solid #efb6a6; }
+
+.answer-label { font-size: 14px; color: var(--ink-soft); }
+.answer-value { font-size: 46px; font-weight: 800; color: var(--accent-deep); line-height: 1.15; }
+.answer-value.empty { color: #d9c9a8; }
+.answer-box.ok .answer-value { color: #3f8f45; }
+.answer-box.no .answer-value { color: #b8523a; }
+.answer-note { font-size: 16px; color: var(--ink-soft); margin-top: 2px; }
+.got-bean { color: var(--accent-deep); font-weight: 700; }
+
+.explain-body { font-size: 17px; line-height: 1.75; color: var(--ink); }
+.explain-body div + div { margin-top: 4px; }
+
+.quiz-actions { display: flex; gap: 10px; }
+.quiz-actions button { flex: 1; }
+
+/* ---------------- 数字键盘 ---------------- */
+.pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.pad-key {
+  border: 1.5px solid var(--card-edge);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 16px;
+  font-size: 30px;
+  font-weight: 600;
+  padding: 6px 0;
+  min-height: 68px;
+  box-shadow: 0 2px 0 rgba(200, 180, 150, 0.25);
+}
+
+.pad-key:active { background: var(--accent-soft); transform: translateY(1px); }
+.pad-key.pad-fn { font-size: 20px; color: var(--ink-soft); background: #faf5ec; }
+
+/* iPad 竖屏空间很足，键盘做大一点更好按 */
+@media (min-height: 900px) {
+  .pad-key { min-height: 84px; font-size: 34px; border-radius: 18px; }
+  .pad-key.pad-fn { font-size: 22px; }
+  .pad-submit { min-height: 78px; font-size: 28px; }
+  .qtext { font-size: 25px; padding: 24px 20px; }
+  .answer-value { font-size: 54px; }
+  .bean-chip .bean-num { font-size: 48px; }
+  #view { padding-left: max(22px, env(safe-area-inset-left, 0px)); padding-right: max(22px, env(safe-area-inset-right, 0px)); }
+}
+
+.tab-icon { display: block; line-height: 0; }
+.inline-bean { display: inline-block; vertical-align: -4px; line-height: 0; }
+
+/* ---------------- 只读报告 ---------------- */
+.kv { display: flex; flex-direction: column; }
+.kv-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f2ead9;
+  font-size: 16px;
+}
+.kv-row:last-child { border-bottom: 0; }
+.kv-k { color: var(--ink-soft); }
+.kv-v { font-weight: 700; color: var(--ink); }
+
+/* ---------------- 家长自己出的题 ---------------- */
+.custom-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+
+.custom-item {
+  background: #fdf6e8;
+  border: 1.5px solid #f0e2c8;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.custom-q { font-size: 16px; margin-bottom: 6px; }
+
+.custom-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+select.input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #b0a08a 50%),
+                    linear-gradient(135deg, #b0a08a 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  min-height: 44px;
+}
+
+.pad-submit {
+  grid-column: 1 / -1;
+  background: #f2e9d8;
+  color: var(--ink-soft);
+  font-size: 24px;
+  min-height: 66px;
+}
+
+.pad-submit.ready {
+  background: linear-gradient(180deg, #7fd07f, #5cb862);
+  color: #fff;
+  border-color: #4ca455;
+  box-shadow: 0 4px 12px rgba(80, 170, 90, 0.3);
+}
+
+.pad-actions { display: flex; }
+.pad-actions button { flex: 1; }
+
+.pin-pad { margin-top: 6px; }
+
+/* ---------------- 家长密码 ---------------- */
+.card.gate { max-width: 460px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+
+.pin-dots { display: flex; justify-content: center; gap: 14px; padding: 6px 0; }
+
+.pin-dots .dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #f0e6d4; border: 2px solid var(--card-edge);
+}
+
+.pin-dots .dot.on { background: var(--accent); border-color: var(--accent-deep); }
+
+/* ---------------- 钱包 ---------------- */
+.wallet-hero { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+.log { display: flex; flex-direction: column; }
+
+.log-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid #f2ead9;
+  font-size: 15.5px;
+}
+
+.log-item:last-child { border-bottom: 0; }
+
+.log-delta { font-weight: 800; min-width: 46px; font-size: 17px; }
+.log-earn .log-delta { color: var(--accent-deep); }
+.log-parent .log-delta { color: #4a7ba8; }
+.log-spend .log-delta { color: #b8523a; }
+.log-note { flex: 1; color: var(--ink); }
+.log-time { color: var(--ink-faint); font-size: 13.5px; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.stat {
+  background: #fdf6e8;
+  border-radius: 12px;
+  padding: 10px 4px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat b { font-size: 22px; color: var(--accent-deep); }
+.stat span { font-size: 12.5px; color: var(--ink-soft); }
+
+.stars-stat { display: flex; flex-direction: column; gap: 7px; }
+
+.stars-row { display: flex; align-items: center; gap: 10px; }
+.stars-label { font-size: 14px; width: 82px; flex: none; color: var(--ink-soft); }
+.stars-row .progress-track { flex: 1; }
+.stars-num { font-size: 13.5px; color: var(--ink-soft); width: 54px; text-align: right; flex: none; }
+
+/* ---------------- 家长面板 ---------------- */
+.parent-beans { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.parent-bean-num { font-size: 34px; font-weight: 800; color: var(--accent-deep); }
+
+.field-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.field-label { font-size: 15px; color: var(--ink-soft); }
+
+.input, .textarea {
+  border: 1.5px solid var(--card-edge);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 17px;
+  font-family: inherit;
+  color: var(--ink);
+  background: #fffefb;
+  flex: 1;
+  min-width: 90px;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.textarea { width: 100%; resize: vertical; font-size: 13px; line-height: 1.4; margin-bottom: 8px; }
+
+/* ---------------- 特效 ---------------- */
+.bean-fly {
+  position: fixed;
+  z-index: 60;
+  font-size: 34px;
+  pointer-events: none;
+  transition: transform 0.72s cubic-bezier(0.3, -0.2, 0.7, 1), opacity 0.72s ease-in;
+  will-change: transform, opacity;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  top: calc(18px + env(safe-area-inset-top, 0px));
+  transform: translateX(-50%);
+  background: rgba(77, 66, 56, 0.94);
+  color: #fff8ec;
+  padding: 11px 20px;
+  border-radius: 14px;
+  font-size: 16px;
+  z-index: 70;
+  transition: opacity 0.4s, transform 0.4s;
+  max-width: 86vw;
+  text-align: center;
+}
+
+.toast-warn { background: rgba(190, 100, 70, 0.96); }
+.toast-out { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+
+/* ---------------- 横屏 / 大屏微调 ---------------- */
+@media (min-width: 820px) {
+  .page { max-width: 820px; }
+  .qtext { font-size: 25px; }
+}
+
+@media (orientation: landscape) and (max-height: 620px) {
+  #view { padding-top: 10px; }
+  .qtext { font-size: 20px; padding: 14px; }
+  .answer-value { font-size: 36px; }
+  .pad-key { min-height: 54px; font-size: 26px; }
+  .bean-chip .bean-num { font-size: 34px; }
+}
+</style>
+</head>
+<body>
+  <div id="app">
+    <main id="view"></main>
+    <nav id="tabs">
+      <button data-nav="home">🏠<span>首页</span></button>
+      <button data-nav="quiz">✏️<span>做题</span></button>
+      <button data-nav="wallet"><span>钱包</span></button>
+      <button data-nav="parent">👨‍👩‍👧<span>家长</span></button>
+    </nav>
+  </div>
+
+  <script>
+/* ===== utils.js ===== */
+/* 奥数豆豆 — 通用工具 */
+window.G = window.G || {};
+(function (G) {
+  'use strict';
+
+  /* 可复现随机数：同一个种子出同一道题，方便测试和截图 */
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  var U = {
+    mulberry32: mulberry32,
+    /* 用字符串或数字做种子 */
+    seedOf: function (s) {
+      if (typeof s === 'number') return s >>> 0;
+      var h = 2166136261;
+      s = String(s);
+      for (var i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    },
+    rng: function (seed) { return mulberry32(U.seedOf(seed === undefined ? Date.now() : seed)); },
+
+    /* rng 相关的随机工具 */
+    ri: function (r, a, b) { return a + Math.floor(r() * (b - a + 1)); },
+    pick: function (r, arr) { return arr[Math.floor(r() * arr.length)]; },
+    chance: function (r, p) { return r() < p; },
+    shuffle: function (r, arr) {
+      var a = arr.slice();
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(r() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    },
+    /* 从 lo..hi 里不重复地取 n 个数 */
+    sample: function (r, lo, hi, n) {
+      var pool = [];
+      for (var v = lo; v <= hi; v++) pool.push(v);
+      return U.shuffle(r, pool).slice(0, n).sort(function (a, b) { return a - b; });
+    },
+
+    clamp: function (v, a, b) { return v < a ? a : (v > b ? b : v); },
+    /* 千分位 */
+    fmt: function (n) {
+      var s = String(n);
+      var neg = s.charAt(0) === '-';
+      if (neg) s = s.slice(1);
+      var out = '';
+      for (var i = 0; i < s.length; i++) {
+        if (i > 0 && (s.length - i) % 3 === 0) out += ',';
+        out += s.charAt(i);
+      }
+      return (neg ? '-' : '') + out;
+    },
+    gcd: function (a, b) { while (b) { var t = a % b; a = b; b = t; } return a; },
+    lcm: function (a, b) { return a / U.gcd(a, b) * b; },
+
+    /* 星期几的中文 */
+    weekday: function (n) { return '一二三四五六日'.charAt(((n - 1) % 7 + 7) % 7); },
+
+    /* ---- 迷你 DOM 助手 ---- */
+    $: function (sel, root) { return (root || document).querySelector(sel); },
+    $$: function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); },
+    /* el('div', {class:'x', text:'hi'}, [child1, child2]) */
+    el: function (tag, props, kids) {
+      var e = document.createElement(tag);
+      if (props) {
+        for (var k in props) {
+          if (!Object.prototype.hasOwnProperty.call(props, k)) continue;
+          var v = props[k];
+          if (v === null || v === undefined || v === false) continue;
+          if (k === 'text') e.textContent = v;
+          else if (k === 'html') e.innerHTML = v;
+          else if (k === 'class') e.className = v;
+          else if (k === 'style' && typeof v === 'object') {
+            for (var sk in v) if (Object.prototype.hasOwnProperty.call(v, sk)) e.style[sk] = v[sk];
+          } else if (k.indexOf('on') === 0 && typeof v === 'function') {
+            e.addEventListener(k.slice(2).toLowerCase(), v);
+          } else if (k === 'dataset' && typeof v === 'object') {
+            for (var dk in v) if (Object.prototype.hasOwnProperty.call(v, dk)) e.dataset[dk] = v[dk];
+          } else {
+            e.setAttribute(k, v === true ? '' : v);
+          }
+        }
+      }
+      if (kids) {
+        (Array.isArray(kids) ? kids : [kids]).forEach(function (c) {
+          if (c === null || c === undefined || c === false) return;
+          e.appendChild(typeof c === 'string' || typeof c === 'number'
+            ? document.createTextNode(String(c)) : c);
+        });
+      }
+      return e;
+    },
+    clear: function (node) { while (node.firstChild) node.removeChild(node.firstChild); return node; },
+
+    /* 时间戳 → 简短时间 */
+    timeText: function (ts) {
+      var d = new Date(ts);
+      function p(n) { return n < 10 ? '0' + n : String(n); }
+      return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    },
+
+    /* ---- base64url：浏览器和 Node 里都能用（用来做「家长报告码」） ---- */
+    b64enc: function (str) {
+      var b;
+      if (typeof btoa === 'function') b = btoa(unescape(encodeURIComponent(str)));
+      else b = Buffer.from(str, 'utf8').toString('base64');
+      return b.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    },
+    b64dec: function (s) {
+      s = String(s).replace(/-/g, '+').replace(/_/g, '/');
+      while (s.length % 4) s += '=';
+      if (typeof atob === 'function') return decodeURIComponent(escape(atob(s)));
+      return Buffer.from(s, 'base64').toString('utf8');
+    }
+  };
+
+  G.U = U;
+})(window.G);
+
+</script>
+  <script>
+/* ===== gen.js ===== */
+/* 奥数豆豆 — 题目生成器
+ *
+ * 设计要点：
+ *  1. 题目和答案都是「算出来」的，不是事先抄好的，所以不会出现答案错
+ *  2. 每道题额外返回 params（出题用到的数字），测试里可以拿它做独立验算
+ *  3. stars 就是题目难度，也是答对能拿到的分数（1★=1分，2★=2分，3★=3分）
+ */
+window.G = window.G || {};
+(function (G) {
+  'use strict';
+  var U = G.U;
+  var ri = U.ri, pick = U.pick, sample = U.sample;
+
+  var TOPICS = [
+    { id: 'calc', name: '计算与巧算' },
+    { id: 'word', name: '应用题' },
+    { id: 'geo', name: '图形' },
+    { id: 'count', name: '计数' },
+    { id: 'number', name: '数论' },
+    { id: 'logic', name: '逻辑与数字谜' }
+  ];
+
+  function topicName(id) {
+    for (var i = 0; i < TOPICS.length; i++) if (TOPICS[i].id === id) return TOPICS[i].name;
+    return id;
+  }
+
+  /* ============================================================
+     计算与巧算
+     ============================================================ */
+  var GEN = [
+
+    {
+      id: 'sum-1-to-n', topic: 'calc', grade: '4', stars: 1,
+      make: function (r) {
+        var n = ri(r, 10, 60);
+        var sum = n * (n + 1) / 2;
+        return {
+          q: '计算：1 + 2 + 3 + … + ' + n + ' = ？',
+          answer: sum,
+          params: { n: n },
+          explain: '首尾配对：(1 + ' + n + ') × ' + n + ' ÷ 2 = ' + sum + '。'
+        };
+      }
+    },
+
+    {
+      id: 'seq-sum', topic: 'calc', grade: '5', stars: 2,
+      make: function (r) {
+        var a1 = ri(r, 1, 9), d = ri(r, 2, 6), n = ri(r, 6, 12);
+        var an = a1 + (n - 1) * d;
+        var sum = n * (a1 + an) / 2;
+        return {
+          q: '计算：' + a1 + ' + ' + (a1 + d) + ' + ' + (a1 + 2 * d) + ' + … + ' + an +
+             '（一共 ' + n + ' 个数）',
+          answer: sum,
+          params: { a1: a1, d: d, n: n },
+          explain: '这是等差数列：首项 ' + a1 + '，公差 ' + d + '，末项 ' + an + '，项数 ' + n + '。\n' +
+                   '和 = (首项 + 末项) × 项数 ÷ 2 = (' + a1 + ' + ' + an + ') × ' + n + ' ÷ 2 = ' + sum + '。'
+        };
+      }
+    },
+
+    {
+      id: 'distribute', topic: 'calc', grade: '4', stars: 1,
+      make: function (r) {
+        var a = ri(r, 3, 9);
+        var s = pick(r, [50, 60, 70, 80, 90, 100, 120]);
+        var b = ri(r, 11, s - 11);
+        var c = s - b;
+        return {
+          q: '简便计算：' + a + ' × ' + b + ' + ' + a + ' × ' + c + ' = ？',
+          answer: a * s,
+          params: { a: a, b: b, c: c },
+          explain: '提取公因数：' + a + ' × ' + b + ' + ' + a + ' × ' + c + ' = ' + a +
+                   ' × (' + b + ' + ' + c + ') = ' + a + ' × ' + s + ' = ' + (a * s) + '。'
+        };
+      }
+    },
+
+    {
+      id: 'square-near', topic: 'calc', grade: '5', stars: 2,
+      make: function (r) {
+        var n = pick(r, [20, 30, 40, 50, 60, 70, 80, 90, 100]);
+        var k = ri(r, 1, 4);
+        var A = n - k, B = n + k;
+        return {
+          q: '简便计算：' + A + ' × ' + B + ' = ？',
+          answer: n * n - k * k,
+          params: { n: n, k: k },
+          explain: '用平方差公式：(' + n + ' − ' + k + ') × (' + n + ' + ' + k + ') = ' + n + '² − ' + k +
+                   '² = ' + (n * n) + ' − ' + (k * k) + ' = ' + (n * n - k * k) + '。'
+        };
+      }
+    },
+
+    {
+      id: 'teen-multiply', topic: 'calc', grade: '5', stars: 2,
+      make: function (r) {
+        var a = ri(r, 1, 9), b = ri(r, 1, 9);
+        var A = 10 + a, B = 10 + b;
+        return {
+          q: '简便计算：' + A + ' × ' + B + ' = ？',
+          answer: A * B,
+          params: { a: a, b: b },
+          explain: '十几乘十几：头乘头 ' + 10 + '×' + 10 + '=' + 100 + '，尾加尾 ' + a + '+' + b + '=' + (a + b) +
+                   '（写在十位，即 ' + ((a + b) * 10) + '），尾乘尾 ' + a + '×' + b + '=' + (a * b) + '。\n' +
+                   '100 + ' + ((a + b) * 10) + ' + ' + (a * b) + ' = ' + (A * B) + '。'
+        };
+      }
+    },
+
+    /* ============================================================
+       应用题
+       ============================================================ */
+
+    {
+      id: 'chicken-rabbit', topic: 'word', grade: '4', stars: 2,
+      make: function (r) {
+        var h = ri(r, 8, 20);
+        var rab = ri(r, 2, h - 2);
+        var legs = 2 * h + 2 * rab;
+        return {
+          q: '笼子里有鸡和兔一共 ' + h + ' 只，数一数一共有 ' + legs + ' 条腿。兔有多少只？',
+          answer: rab,
+          params: { heads: h, legs: legs },
+          explain: '假设全是鸡，应该有 ' + (2 * h) + ' 条腿，实际多了 ' + (legs - 2 * h) + ' 条。\n' +
+                   '每把一只鸡换成兔就多 2 条腿，所以兔 = ' + (legs - 2 * h) + ' ÷ 2 = ' + rab + ' 只。'
+        };
+      }
+    },
+
+    {
+      id: 'sum-diff', topic: 'word', grade: '4', stars: 1,
+      make: function (r) {
+        var big = ri(r, 15, 60), small = ri(r, 5, big - 1);
+        var S = big + small, D = big - small;
+        return {
+          q: '两个数的和是 ' + S + '，差是 ' + D + '。比较大的那个数是多少？',
+          answer: big,
+          params: { sum: S, diff: D },
+          explain: '和差问题：大数 = (和 + 差) ÷ 2 = (' + S + ' + ' + D + ') ÷ 2 = ' + big + '。'
+        };
+      }
+    },
+
+    {
+      id: 'sum-multiple', topic: 'word', grade: '4', stars: 1,
+      make: function (r) {
+        var k = ri(r, 2, 5);
+        var small = ri(r, 6, 30);
+        var big = k * small;
+        return {
+          q: '哥哥的贴纸数是弟弟的 ' + k + ' 倍，两个人一共有 ' + (big + small) + ' 张。弟弟有多少张？',
+          answer: small,
+          params: { k: k, sum: big + small },
+          explain: '把弟弟的看成 1 份，哥哥就是 ' + k + ' 份，一共 ' + (k + 1) + ' 份。\n' +
+                   '弟弟 = ' + (big + small) + ' ÷ ' + (k + 1) + ' = ' + small + ' 张。'
+        };
+      }
+    },
+
+    {
+      id: 'diff-multiple', topic: 'word', grade: '5', stars: 2,
+      make: function (r) {
+        var k = ri(r, 2, 5);
+        var small = ri(r, 5, 25);
+        var big = k * small;
+        return {
+          q: '妈妈今年的年龄是女儿的 ' + k + ' 倍，妈妈比女儿大 ' + (big - small) + ' 岁。女儿今年几岁？',
+          answer: small,
+          params: { k: k, diff: big - small },
+          explain: '把女儿的看成 1 份，妈妈就是 ' + k + ' 份，多出的 ' + (k - 1) + ' 份正好是 ' + (big - small) + ' 岁。\n' +
+                   '女儿 = ' + (big - small) + ' ÷ ' + (k - 1) + ' = ' + small + ' 岁。'
+        };
+      }
+    },
+
+    {
+      id: 'age-future', topic: 'word', grade: '5', stars: 2,
+      make: function (r) {
+        var k = ri(r, 3, 5);
+        var b = ri(r, 6, 14);
+        var t = ri(r, 2, 12);
+        var a = k * (b + t) - t;         /* 今年爸爸的年龄 */
+        return {
+          q: '今年爸爸 ' + a + ' 岁，儿子 ' + b + ' 岁。几年以后爸爸的年龄正好是儿子的 ' + k + ' 倍？',
+          answer: t,
+          params: { father: a, son: b, k: k },
+          explain: '设过 x 年以后：' + a + ' + x = ' + k + ' × (' + b + ' + x)\n' +
+                   a + ' + x = ' + (k * b) + ' + ' + k + 'x\n' +
+                   (a - k * b) + ' = ' + (k - 1) + 'x，所以 x = ' + (a - k * b) + ' ÷ ' + (k - 1) + ' = ' + t + ' 年。'
+        };
+      }
+    },
+
+    {
+      id: 'profit-loss', topic: 'word', grade: '5', stars: 3,
+      make: function (r) {
+        var n = ri(r, 5, 15);
+        var x = ri(r, 3, 8);
+        var gap = ri(r, 1, 3);
+        var y = x + gap;
+        var A = ri(r, 2, gap * n - 2);
+        var B = gap * n - A;
+        return {
+          q: '老师给小朋友分糖。如果每人分 ' + x + ' 颗，就多出 ' + A + ' 颗；如果每人分 ' + y +
+             ' 颗，就少 ' + B + ' 颗。一共有多少个小朋友？',
+          answer: n,
+          params: { n: n, x: x, y: y, more: A, less: B },
+          explain: '两种分法每人相差 ' + gap + ' 颗，总共相差 ' + (A + B) + ' 颗。\n' +
+                   '人数 = (' + A + ' + ' + B + ') ÷ ' + gap + ' = ' + n + ' 人。'
+        };
+      }
+    },
+
+    {
+      id: 'meet', topic: 'word', grade: '5', stars: 2,
+      make: function (r) {
+        var v1 = ri(r, 4, 9) * 10, v2 = ri(r, 4, 9) * 10;
+        var t = ri(r, 2, 6);
+        var S = (v1 + v2) * t;
+        return {
+          q: '甲乙两地相距 ' + S + ' 千米。两辆车同时从两地相向开出，速度分别是 ' + v1 +
+             ' 千米/时 和 ' + v2 + ' 千米/时。几小时后两车相遇？',
+          answer: t,
+          params: { v1: v1, v2: v2, S: S },
+          explain: '相遇时间 = 路程 ÷ 速度和 = ' + S + ' ÷ (' + v1 + ' + ' + v2 + ') = ' + S + ' ÷ ' +
+                   (v1 + v2) + ' = ' + t + ' 小时。'
+        };
+      }
+    },
+
+    {
+      id: 'chase', topic: 'word', grade: '5', stars: 3,
+      make: function (r) {
+        var v2 = ri(r, 2, 4);
+        var v1 = v2 + ri(r, 2, 6);
+        var t = ri(r, 3, 10);
+        var S = (v1 - v2) * t;
+        return {
+          q: '小明在小华后面 ' + S + ' 米，两人同时同向出发。小明每秒跑 ' + v1 + ' 米，小华每秒跑 ' +
+             v2 + ' 米。几秒后小明追上小华？',
+          answer: t,
+          params: { v1: v1, v2: v2, S: S },
+          explain: '追及时间 = 路程差 ÷ 速度差 = ' + S + ' ÷ (' + v1 + ' − ' + v2 + ') = ' + S + ' ÷ ' +
+                   (v1 - v2) + ' = ' + t + ' 秒。'
+        };
+      }
+    },
+
+    {
+      id: 'tree-plant', topic: 'word', grade: '4', stars: 2,
+      make: function (r) {
+        var d = ri(r, 2, 8);
+        var seg = ri(r, 5, 20);
+        var L = d * seg;
+        return {
+          q: '一条 ' + L + ' 米长的小路，从头到尾每隔 ' + d + ' 米种一棵树（两端都要种）。一共要种多少棵树？',
+          answer: seg + 1,
+          params: { L: L, d: d, seg: seg },
+          explain: '先看有多少段：' + L + ' ÷ ' + d + ' = ' + seg + ' 段。\n' +
+                   '两端都种的时候，棵数 = 段数 + 1 = ' + seg + ' + 1 = ' + (seg + 1) + ' 棵。'
+        };
+      }
+    },
+
+    {
+      id: 'work-together', topic: 'word', grade: '5', stars: 3,
+      make: function (r) {
+        var TRIPLES = [[2, 2, 1], [3, 6, 2], [6, 3, 2], [4, 4, 2], [4, 12, 3], [12, 4, 3],
+                       [6, 6, 3], [5, 20, 4], [20, 5, 4], [6, 12, 4], [12, 6, 4]];
+        var t = pick(r, TRIPLES);
+        var a = t[0], b = t[1], ans = t[2];
+        return {
+          q: '一件工作，甲单独做要 ' + a + ' 天完成，乙单独做要 ' + b + ' 天完成。两人合作要多少天完成？',
+          answer: ans,
+          params: { a: a, b: b },
+          explain: '把工作总量看作 1。甲每天做 1/' + a + '，乙每天做 1/' + b + '。\n' +
+                   '合作每天做 1/' + a + ' + 1/' + b + ' = ' + (a + b) + '/' + (a * b) + ' = 1/' + ans + '，\n' +
+                   '所以合作需要 ' + ans + ' 天。'
+        };
+      }
+    },
+
+    {
+      id: 'consecutive-sum', topic: 'word', grade: '5', stars: 2,
+      make: function (r) {
+        var start = ri(r, 5, 30);
+        var n = pick(r, [3, 5, 7]);           /* 取奇数个，平均数才是整数 */
+        var sum = n * (2 * start + n - 1) / 2;
+        var mid = sum / n;
+        var half = (n - 1) / 2;
+        return {
+          q: n + ' 个连续自然数的和是 ' + sum + '。其中最小的那个数是多少？',
+          answer: start,
+          params: { n: n, sum: sum, start: start },
+          explain: '它们的平均数是 ' + sum + ' ÷ ' + n + ' = ' + mid + '，正好是中间那个数。\n' +
+                   '最小的数比中间数小 ' + half + '，所以是 ' + mid + ' − ' + half + ' = ' + start + '。'
+        };
+      }
+    },
+
+    /* ============================================================
+       图形
+       ============================================================ */
+
+    {
+      id: 'rect-area', topic: 'geo', grade: '4', stars: 1,
+      make: function (r) {
+        var a = ri(r, 6, 20), b = ri(r, 3, a - 1);
+        var askArea = r() < 0.5;
+        if (askArea) {
+          return {
+            q: '一个长方形长 ' + a + ' 厘米，宽 ' + b + ' 厘米。它的面积是多少平方厘米？',
+            answer: a * b,
+            params: { a: a, b: b, kind: 'area' },
+            explain: '长方形面积 = 长 × 宽 = ' + a + ' × ' + b + ' = ' + (a * b) + ' 平方厘米。'
+          };
+        }
+        return {
+          q: '一个长方形长 ' + a + ' 厘米，宽 ' + b + ' 厘米。它的周长是多少厘米？',
+          answer: 2 * (a + b),
+          params: { a: a, b: b, kind: 'perimeter' },
+          explain: '长方形周长 = (长 + 宽) × 2 = (' + a + ' + ' + b + ') × 2 = ' + (2 * (a + b)) + ' 厘米。'
+        };
+      }
+    },
+
+    {
+      id: 'area-increase', topic: 'geo', grade: '5', stars: 2,
+      make: function (r) {
+        var a = ri(r, 8, 25), b = ri(r, 4, 15), add = ri(r, 2, 9);
+        return {
+          q: '一个长方形长 ' + a + ' 米，宽 ' + b + ' 米。如果长增加 ' + add +
+             ' 米、宽不变，面积会增加多少平方米？',
+          answer: b * add,
+          params: { a: a, b: b, add: add },
+          explain: '增加的部分是一个长 ' + add + ' 米、宽 ' + b + ' 米的长方形。\n' +
+                   '面积增加 = ' + add + ' × ' + b + ' = ' + (b * add) + ' 平方米。\n' +
+                   '（也可以算：' + (a + add) + '×' + b + ' − ' + a + '×' + b + ' = ' +
+                   ((a + add) * b) + ' − ' + (a * b) + ' = ' + (b * add) + '）'
+        };
+      }
+    },
+
+    {
+      id: 'count-squares', topic: 'geo', grade: '5', stars: 3,
+      make: function (r) {
+        var n = ri(r, 3, 6);
+        var total = 0, parts = [];
+        for (var k = 1; k <= n; k++) { total += k * k; parts.push(k * k); }
+        return {
+          q: '一个 ' + n + ' × ' + n + ' 的方格图（最小格子的边长是 1），图中一共有多少个正方形？',
+          answer: total,
+          params: { n: n },
+          explain: '按边长分类数：边长 1 的有 ' + n + '²=' + (n * n) + ' 个，边长 2 的有 ' +
+                   (n - 1) + '²=' + ((n - 1) * (n - 1)) + ' 个……\n' +
+                   '合计 = ' + parts.join(' + ') + ' = ' + total + ' 个。'
+        };
+      }
+    },
+
+    {
+      id: 'count-rects', topic: 'geo', grade: '5', stars: 3,
+      make: function (r) {
+        var m = ri(r, 2, 5), n = ri(r, 2, 5);
+        var ch = m * (m + 1) / 2, cv = n * (n + 1) / 2;
+        return {
+          q: '一个 ' + m + ' 行 ' + n + ' 列的方格图，图中一共有多少个长方形？',
+          answer: ch * cv,
+          params: { m: m, n: n },
+          explain: '一个长方形由 2 条横线和 2 条竖线确定。\n' +
+                   '横线有 ' + (m + 1) + ' 条，选 2 条有 ' + (m + 1) + '×' + m + '÷2 = ' + ch + ' 种；\n' +
+                   '竖线有 ' + (n + 1) + ' 条，选 2 条有 ' + (n + 1) + '×' + n + '÷2 = ' + cv + ' 种；\n' +
+                   '一共 ' + ch + ' × ' + cv + ' = ' + (ch * cv) + ' 个。'
+        };
+      }
+    },
+
+    /* ============================================================
+       计数
+       ============================================================ */
+
+    {
+      id: 'handshake', topic: 'count', grade: '4', stars: 2,
+      make: function (r) {
+        var n = ri(r, 5, 12);
+        return {
+          q: n + ' 个小朋友，每两个人握一次手，一共要握多少次手？',
+          answer: n * (n - 1) / 2,
+          params: { n: n },
+          explain: '每个人都和另外 ' + (n - 1) + ' 个人握手：' + n + ' × ' + (n - 1) + ' = ' + (n * (n - 1)) + ' 次。\n' +
+                   '但每两个人之间算了 2 次，所以要 ÷ 2：' + (n * (n - 1)) + ' ÷ 2 = ' + (n * (n - 1) / 2) + ' 次。'
+        };
+      }
+    },
+
+    {
+      id: 'line-segments', topic: 'count', grade: '4', stars: 2,
+      make: function (r) {
+        var n = ri(r, 4, 10);
+        return {
+          q: '一条直线上有 ' + n + ' 个点，以这些点为端点，一共能数出多少条线段？',
+          answer: n * (n - 1) / 2,
+          params: { n: n },
+          explain: '每条线段由 2 个端点确定，就是从 ' + n + ' 个点里选 2 个：\n' +
+                   n + ' × ' + (n - 1) + ' ÷ 2 = ' + (n * (n - 1) / 2) + ' 条。'
+        };
+      }
+    },
+
+    {
+      id: 'digits-three', topic: 'count', grade: '5', stars: 2,
+      make: function (r) {
+        var n = ri(r, 4, 6);
+        var nums = sample(r, 1, 9, n);
+        return {
+          q: '用 ' + nums.join('、') + ' 这 ' + n + ' 个数字，可以组成多少个没有重复数字的三位数？',
+          answer: n * (n - 1) * (n - 2),
+          params: { n: n, nums: nums },
+          explain: '百位有 ' + n + ' 种选法；百位选好后，十位剩 ' + (n - 1) + ' 种；个位剩 ' + (n - 2) + ' 种。\n' +
+                   '一共 ' + n + ' × ' + (n - 1) + ' × ' + (n - 2) + ' = ' + (n * (n - 1) * (n - 2)) + ' 个。'
+        };
+      }
+    },
+
+    /* ============================================================
+       数论
+       ============================================================ */
+
+    {
+      id: 'divisible-count', topic: 'number', grade: '4', stars: 1,
+      make: function (r) {
+        var k = pick(r, [3, 4, 6, 7, 8, 9]);
+        var N = ri(r, 30, 200);
+        var ans = Math.floor(N / k);
+        return {
+          q: '在 1 到 ' + N + ' 中，能被 ' + k + ' 整除的数有多少个？',
+          answer: ans,
+          params: { k: k, N: N },
+          explain: '就是看 ' + k + ' 的倍数有几个：' + k + '×1、' + k + '×2、…\n' +
+                   N + ' ÷ ' + k + ' = ' + ans + ' 余 ' + (N % k) + '，所以有 ' + ans + ' 个。'
+        };
+      }
+    },
+
+    {
+      id: 'odd-count', topic: 'number', grade: '4', stars: 1,
+      make: function (r) {
+        var N = ri(r, 20, 120);
+        var ans = Math.ceil(N / 2);
+        return {
+          q: '从 1 到 ' + N + ' 一共有多少个奇数？',
+          answer: ans,
+          params: { N: N },
+          explain: '1、3、5、…，每两个数里有一个奇数。\n' +
+                   N + ' 是' + (N % 2 ? '奇数' : '偶数') + '，所以奇数的个数是 ' + ans + ' 个。'
+        };
+      }
+    },
+
+    {
+      id: 'week-cycle', topic: 'number', grade: '5', stars: 2,
+      make: function (r) {
+        var start = ri(r, 1, 7);
+        var N = ri(r, 10, 100);
+        var ans = ((start - 1 + N) % 7) + 1;
+        var rem = N % 7;
+        return {
+          q: '今天是星期' + U.weekday(start) + '，再过 ' + N +
+             ' 天是星期几？（请填数字：周一填 1，周二填 2，…，周日填 7）',
+          answer: ans,
+          params: { start: start, N: N },
+          explain: N + ' ÷ 7 = ' + Math.floor(N / 7) + ' 余 ' + rem + '，所以只要往后数 ' + rem + ' 天。\n' +
+                   '星期' + U.weekday(start) + ' 往后数 ' + rem + ' 天是星期' + U.weekday(ans) +
+                   '，也就是填 ' + ans + '。'
+        };
+      }
+    },
+
+    {
+      id: 'gcd', topic: 'number', grade: '5', stars: 3,
+      make: function (r) {
+        var g = ri(r, 3, 12);
+        var m = ri(r, 2, 6), n = ri(r, 2, 6);
+        while (U.gcd(m, n) !== 1) { n = ri(r, 2, 6); }   /* 保证互质，最大公因数就是 g */
+        var a = g * m, b = g * n;
+        return {
+          q: '求 ' + a + ' 和 ' + b + ' 的最大公因数。',
+          answer: g,
+          params: { a: a, b: b, g: g, m: m, n: n },
+          explain: a + ' = ' + g + ' × ' + m + '，' + b + ' = ' + g + ' × ' + n + '，而 ' + m + ' 和 ' + n +
+                   ' 互质（没有公因数）。\n所以最大公因数就是 ' + g + '。'
+        };
+      }
+    },
+
+    /* ============================================================
+       逻辑与数字谜
+       ============================================================ */
+
+    {
+      id: 'two-digit', topic: 'logic', grade: '4', stars: 2,
+      make: function (r) {
+        var tens = ri(r, 3, 9);
+        var ones = ri(r, 1, tens - 1);
+        var sum = tens + ones, diff = tens - ones;
+        return {
+          q: '一个两位数，十位上的数字比个位上的数字大 ' + diff + '，两个数字的和是 ' + sum + '。这个两位数是多少？',
+          answer: tens * 10 + ones,
+          params: { tens: tens, ones: ones },
+          explain: '十位 = (和 + 差) ÷ 2 = (' + sum + ' + ' + diff + ') ÷ 2 = ' + tens + '；\n' +
+                   '个位 = ' + sum + ' − ' + tens + ' = ' + ones + '。\n' +
+                   '所以这个两位数是 ' + (tens * 10 + ones) + '。'
+        };
+      }
+    },
+
+    {
+      id: 'age-ratio-now', topic: 'logic', grade: '5', stars: 3,
+      make: function (r) {
+        var t = ri(r, 2, 8);
+        var k = ri(r, 2, 4);
+        var son = ri(r, 6, 12);
+        /* t 年前爸爸是儿子的 k 倍：father - t = k(son - t) */
+        var father = k * (son - t) + t;
+        if (father <= son) return null;      /* 生成失败就换一个 */
+        return {
+          q: t + ' 年前，爸爸的年龄是儿子的 ' + k + ' 倍。今年儿子 ' + son +
+             ' 岁，今年爸爸多少岁？',
+          answer: father,
+          params: { t: t, k: k, son: son },
+          explain: t + ' 年前儿子是 ' + (son - t) + ' 岁，那时爸爸是 ' + (son - t) + ' × ' + k + ' = ' +
+                   (k * (son - t)) + ' 岁。\n今年爸爸 = ' + (k * (son - t)) + ' + ' + t + ' = ' + father + ' 岁。'
+        };
+      }
+    },
+
+    /* ============================================================
+       五年级知识点扩展（对齐《奥数精讲与测试》五年级的题型体系：
+       整除与质因数、余数、行程、工程、容斥、抽屉、方阵、图形、
+       还原、平均数等）。题目全部由程序生成，答案由计算得出。
+       ============================================================ */
+
+    {
+      id: 'divisor-count', topic: 'number', grade: '5', stars: 3,
+      make: function (r) {
+        var n = ri(r, 12, 96);
+        var list = [];
+        for (var i = 1; i <= n; i++) if (n % i === 0) list.push(i);
+        return {
+          q: n + ' 一共有多少个因数（约数）？',
+          answer: list.length,
+          params: { n: n },
+          explain: '把因数一对一对找出来就不会漏：\n' + list.join('、') + '\n一共 ' + list.length + ' 个。'
+        };
+      }
+    },
+
+    {
+      id: 'max-prime-factor', topic: 'number', grade: '5', stars: 3,
+      make: function (r) {
+        var n = pick(r, [36, 48, 60, 72, 84, 90, 96, 120, 132, 150, 168, 180, 210]);
+        var m = n, best = 1, d = 2;
+        var parts = [];
+        while (d * d <= m) {
+          var e = 0;
+          while (m % d === 0) { m /= d; e++; }
+          if (e) { parts.push(e > 1 ? d + '^' + e : String(d)); best = d; }
+          d++;
+        }
+        if (m > 1) { parts.push(String(m)); best = m; }
+        return {
+          q: '把 ' + n + ' 分解质因数，其中最大的质因数是多少？',
+          answer: best,
+          params: { n: n },
+          explain: '用短除法一直除到商是质数：\n' + n + ' = ' + parts.join(' × ') +
+                   '\n最大的质因数是 ' + best + '。'
+        };
+      }
+    },
+
+    {
+      id: 'fill-digit-9', topic: 'number', grade: '5', stars: 2,
+      make: function (r) {
+        var a = ri(r, 1, 9), b = ri(r, 0, 9);
+        var all = [];
+        for (var x = 0; x <= 9; x++) if ((a * 100 + x * 10 + b) % 9 === 0) all.push(x);
+        return {
+          q: '三位数 ' + a + '□' + b + ' 能被 9 整除，□ 里最小填几？',
+          answer: all[0],
+          params: { a: a, b: b, all: all },
+          explain: '能被 9 整除的数，各位数字之和一定是 9 的倍数。\n' +
+                   a + ' + □ + ' + b + ' = ' + (a + b) + ' + □，要让它是 9 的倍数，□ 最小是 ' + all[0] + '。' +
+                   (all.length > 1 ? '\n（其实 ' + all.join('、') + ' 都可以，最小的是 ' + all[0] + '）' : '')
+        };
+      }
+    },
+
+    {
+      id: 'remainder-min', topic: 'number', grade: '5', stars: 3,
+      make: function (r) {
+        var m1 = ri(r, 3, 7), r1 = ri(r, 1, m1 - 1);
+        var m2 = ri(r, 3, 8), r2 = ri(r, 1, m2 - 1);
+        var ans = -1;
+        for (var n = 1; n <= 5000; n++) if (n % m1 === r1 && n % m2 === r2) { ans = n; break; }
+        if (ans < 0) return null;
+        var cand = [];
+        for (var v = r1; v <= ans; v += m1) cand.push(v);
+        return {
+          q: '一个数除以 ' + m1 + ' 余 ' + r1 + '，除以 ' + m2 + ' 余 ' + r2 + '。这个数最小是多少？',
+          answer: ans,
+          params: { m1: m1, r1: r1, m2: m2, r2: r2 },
+          explain: '先列出「除以 ' + m1 + ' 余 ' + r1 + '」的数：' + cand.join('、') +
+                   (cand.length > 8 ? ' …' : '') + '\n' +
+                   '其中第一个满足「除以 ' + m2 + ' 余 ' + r2 + '」的就是 ' + ans + '。'
+        };
+      }
+    },
+
+    {
+      id: 'trailing-zeros', topic: 'number', grade: '5', stars: 3,
+      make: function (r) {
+        var n = pick(r, [10, 15, 20, 25, 30, 40, 50, 60, 75, 100]);
+        var c = 0, terms = [], p = 5;
+        while (p <= n) {
+          var k = Math.floor(n / p);
+          c += k; terms.push('⌊' + n + '÷' + p + '⌋=' + k);
+          p *= 5;
+        }
+        return {
+          q: n + '! = 1×2×3×…×' + n + '，这个数末尾一共有多少个 0？',
+          answer: c,
+          params: { n: n },
+          explain: '末尾的每个 0 都要一个 2 和一个 5 配对。2 的个数远多于 5，所以只要数有多少个 5。\n' +
+                   terms.join('，') + '\n合计 ' + c + ' 个 0。'
+        };
+      }
+    },
+
+    {
+      id: 'lcm-two', topic: 'number', grade: '5', stars: 2,
+      make: function (r) {
+        var a = ri(r, 4, 24), b = ri(r, 4, 24);
+        var lo = Math.max(a, b), hi = Math.min(a, b);
+        var ans = U.lcm(a, b);
+        var seq = [];
+        for (var v = lo; v <= ans; v += lo) seq.push(v);
+        return {
+          q: a + ' 和 ' + b + ' 的最小公倍数是多少？',
+          answer: ans,
+          params: { a: a, b: b },
+          explain: '从较大的数 ' + lo + ' 开始翻倍，第一个同时是 ' + hi + ' 的倍数的就是答案：\n' +
+                   seq.join('、') + ' → ' + ans + '。'
+        };
+      }
+    },
+
+    {
+      id: 'fraction-of', topic: 'calc', grade: '5', stars: 2,
+      make: function (r) {
+        var den = pick(r, [3, 4, 5, 6, 8, 10]);
+        var num = ri(r, 1, den - 1);
+        var base = den * ri(r, 2, 12);
+        var ans = base / den * num;
+        return {
+          q: base + ' 的 ' + num + '/' + den + ' 是多少？',
+          answer: ans,
+          params: { base: base, num: num, den: den },
+          explain: '先求一份是多少：' + base + ' ÷ ' + den + ' = ' + (base / den) + '。\n' +
+                   '再乘以份数：' + (base / den) + ' × ' + num + ' = ' + ans + '。'
+        };
+      }
+    },
+
+    {
+      id: 'train-bridge', topic: 'word', grade: '5', stars: 3,
+      make: function (r) {
+        var len = pick(r, [120, 150, 180, 200, 240, 300]);
+        var bridge = pick(r, [400, 500, 600, 700, 800, 900, 1000]);
+        var v = pick(r, [15, 20, 25, 30]);
+        var total = len + bridge;
+        if (total % v !== 0) return null;
+        return {
+          q: '一列火车长 ' + len + ' 米，以每秒 ' + v + ' 米的速度通过一座 ' + bridge +
+             ' 米长的大桥。从车头上桥到车尾离桥，一共需要多少秒？',
+          answer: total / v,
+          params: { len: len, bridge: bridge, v: v },
+          explain: '「完全通过」走的路程不只是桥长，还要加上车身的长度：\n' +
+                   len + ' + ' + bridge + ' = ' + total + ' 米。\n' +
+                   '时间 = ' + total + ' ÷ ' + v + ' = ' + (total / v) + ' 秒。'
+        };
+      }
+    },
+
+    {
+      id: 'boat-river', topic: 'word', grade: '5', stars: 3,
+      make: function (r) {
+        var still = ri(r, 8, 20), flow = ri(r, 2, 5);
+        var down = still + flow;
+        var t = pick(r, [2, 3, 4, 5]);
+        var S = down * t;
+        return {
+          q: '一条船在静水中的速度是每小时 ' + still + ' 千米，水流速度是每小时 ' + flow +
+             ' 千米。它顺水航行 ' + S + ' 千米需要多少小时？',
+          answer: t,
+          params: { still: still, flow: flow, S: S },
+          explain: '顺水速度 = 静水速度 + 水速 = ' + still + ' + ' + flow + ' = ' + down + ' 千米/时。\n' +
+                   '时间 = 路程 ÷ 顺水速度 = ' + S + ' ÷ ' + down + ' = ' + t + ' 小时。'
+        };
+      }
+    },
+
+    {
+      id: 'average-speed', topic: 'word', grade: '5', stars: 3,
+      make: function (r) {
+        var PAIRS = [[3, 6, 4], [4, 12, 6], [6, 12, 8], [2, 6, 3], [5, 20, 8],
+                     [10, 15, 12], [6, 3, 4], [12, 4, 6], [20, 5, 8], [15, 10, 12]];
+        var p = pick(r, PAIRS);
+        var a = p[0], b = p[1], ans = p[2];
+        return {
+          q: '小明上山的速度是每小时 ' + a + ' 千米，沿原路下山的速度是每小时 ' + b +
+             ' 千米。他上下山的平均速度是每小时多少千米？',
+          answer: ans,
+          params: { a: a, b: b },
+          explain: '平均速度不是两个速度的平均数，要用「总路程 ÷ 总时间」。\n' +
+                   '设单程 ' + (a * b) + ' 千米：上山用 ' + b + ' 小时，下山用 ' + a + ' 小时，一共 ' + (a + b) + ' 小时。\n' +
+                   '平均速度 = ' + (2 * a * b) + ' ÷ ' + (a + b) + ' = ' + ans + ' 千米/时。'
+        };
+      }
+    },
+
+    {
+      id: 'inclusion', topic: 'count', grade: '5', stars: 3,
+      make: function (r) {
+        var a = pick(r, [2, 3, 4, 5, 6]), b = pick(r, [3, 5, 7, 9]);
+        var N = ri(r, 30, 150);
+        var ca = Math.floor(N / a), cb = Math.floor(N / b);
+        var l = U.lcm(a, b), cl = Math.floor(N / l);
+        return {
+          q: '在 1 到 ' + N + ' 中，能被 ' + a + ' 或 ' + b + ' 整除的数一共有多少个？',
+          answer: ca + cb - cl,
+          params: { a: a, b: b, N: N },
+          explain: '被 ' + a + ' 整除的有 ' + ca + ' 个，被 ' + b + ' 整除的有 ' + cb + ' 个。\n' +
+                   '两者都被算到的（' + l + ' 的倍数）有 ' + cl + ' 个，重复了要减掉：\n' +
+                   ca + ' + ' + cb + ' − ' + cl + ' = ' + (ca + cb - cl) + ' 个。'
+        };
+      }
+    },
+
+    {
+      id: 'pigeonhole', topic: 'logic', grade: '5', stars: 2,
+      make: function (r) {
+        var m = ri(r, 3, 8), k = ri(r, 2, 5);
+        var n = m * k - ri(r, 0, m - 1);
+        return {
+          q: '把 ' + n + ' 个苹果放进 ' + m + ' 个抽屉里，至少有一个抽屉里至少有几个苹果？',
+          answer: Math.ceil(n / m),
+          params: { n: n, m: m },
+          explain: '反过来想：如果每个抽屉最多放 ' + (k - 1) + ' 个，' + m + ' 个抽屉最多只能放 ' +
+                   (m * (k - 1)) + ' 个，不够 ' + n + ' 个。\n' +
+                   '所以至少有一个抽屉要放 ' + k + ' 个。'
+        };
+      }
+    },
+
+    {
+      id: 'square-formation', topic: 'count', grade: '5', stars: 2,
+      make: function (r) {
+        var n = ri(r, 4, 15);
+        return {
+          q: '同学们排成一个 ' + n + ' 行 ' + n + ' 列的方阵。最外一层一共有多少人？',
+          answer: 4 * n - 4,
+          params: { n: n },
+          explain: '最外层每边 ' + n + ' 人，4 条边一共 ' + (4 * n) + ' 人；\n' +
+                   '但 4 个角上的人各被数了 2 次，要减掉 4：' + (4 * n) + ' − 4 = ' + (4 * n - 4) + ' 人。'
+        };
+      }
+    },
+
+    {
+      id: 'diagonals', topic: 'geo', grade: '5', stars: 2,
+      make: function (r) {
+        var n = ri(r, 4, 12);
+        return {
+          q: '一个 ' + n + ' 边形一共有多少条对角线？',
+          answer: n * (n - 3) / 2,
+          params: { n: n },
+          explain: '每个顶点可以连出 ' + (n - 3) + ' 条对角线（除去自己和相邻的 2 个点）。\n' +
+                   n + ' 个顶点一共 ' + n + ' × ' + (n - 3) + ' = ' + (n * (n - 3)) +
+                   ' 条，但每条被两个端点各数了一次，所以 ÷ 2 = ' + (n * (n - 3) / 2) + ' 条。'
+        };
+      }
+    },
+
+    {
+      id: 'triangle-area', topic: 'geo', grade: '5', stars: 2,
+      make: function (r) {
+        var b = ri(r, 3, 20), h = ri(r, 2, 16);
+        var area = b * h / 2;
+        if (area !== Math.round(area)) return null;
+        return {
+          q: '一个三角形的底是 ' + b + ' 厘米，高是 ' + h + ' 厘米。它的面积是多少平方厘米？',
+          answer: area,
+          params: { b: b, h: h },
+          explain: '三角形面积 = 底 × 高 ÷ 2 = ' + b + ' × ' + h + ' ÷ 2 = ' + area + ' 平方厘米。'
+        };
+      }
+    },
+
+    {
+      id: 'trapezoid-area', topic: 'geo', grade: '5', stars: 2,
+      make: function (r) {
+        var a = ri(r, 3, 12), b = a + ri(r, 2, 10), h = ri(r, 2, 14);
+        var area = (a + b) * h / 2;
+        if (area !== Math.round(area)) return null;
+        return {
+          q: '一个梯形的上底是 ' + a + ' 厘米，下底是 ' + b + ' 厘米，高是 ' + h +
+             ' 厘米。它的面积是多少平方厘米？',
+          answer: area,
+          params: { a: a, b: b, h: h },
+          explain: '梯形面积 = (上底 + 下底) × 高 ÷ 2 = (' + a + ' + ' + b + ') × ' + h + ' ÷ 2 = ' +
+                   area + ' 平方厘米。'
+        };
+      }
+    },
+
+    {
+      id: 'cube-measure', topic: 'geo', grade: '5', stars: 1,
+      make: function (r) {
+        var a = ri(r, 2, 12);
+        var askVolume = r() < 0.5;
+        if (askVolume) {
+          return {
+            q: '一个正方体的棱长是 ' + a + ' 厘米，它的体积是多少立方厘米？',
+            answer: a * a * a,
+            params: { a: a, kind: 'volume' },
+            explain: '正方体体积 = 棱长 × 棱长 × 棱长 = ' + a + ' × ' + a + ' × ' + a + ' = ' + (a * a * a) + ' 立方厘米。'
+          };
+        }
+        return {
+          q: '一个正方体的棱长是 ' + a + ' 厘米，它的表面积是多少平方厘米？',
+          answer: 6 * a * a,
+          params: { a: a, kind: 'surface' },
+          explain: '正方体有 6 个面，每个面都是边长 ' + a + ' 的正方形。\n' +
+                   '表面积 = ' + a + ' × ' + a + ' × 6 = ' + (6 * a * a) + ' 平方厘米。'
+        };
+      }
+    },
+
+    {
+      id: 'restore', topic: 'word', grade: '5', stars: 2,
+      make: function (r) {
+        var x = ri(r, 3, 30), a = ri(r, 2, 20), b = ri(r, 2, 6), c = ri(r, 2, 30);
+        var R = (x + a) * b - c;
+        return {
+          q: '一个数先加上 ' + a + '，再乘以 ' + b + '，最后减去 ' + c + '，结果是 ' + R +
+             '。这个数原来是多少？',
+          answer: x,
+          params: { x: x, a: a, b: b, c: c, R: R },
+          explain: '倒过来算（加变成减、乘变成除）：\n' +
+                   R + ' + ' + c + ' = ' + (R + c) + '\n' +
+                   (R + c) + ' ÷ ' + b + ' = ' + ((R + c) / b) + '\n' +
+                   ((R + c) / b) + ' − ' + a + ' = ' + x + '。'
+        };
+      }
+    },
+
+    {
+      id: 'average-rest', topic: 'word', grade: '5', stars: 2,
+      make: function (r) {
+        var n = ri(r, 3, 6), avg = ri(r, 10, 40), x = ri(r, 1, avg * 2);
+        var total = n * avg;
+        var rest = total - x;
+        if (rest % (n - 1) !== 0) return null;
+        return {
+          q: n + ' 个数的平均数是 ' + avg + '，其中有一个数是 ' + x +
+             '。剩下 ' + (n - 1) + ' 个数的平均数是多少？',
+          answer: rest / (n - 1),
+          params: { n: n, avg: avg, x: x },
+          explain: '总和 = ' + n + ' × ' + avg + ' = ' + total + '。\n' +
+                   '去掉 ' + x + ' 以后剩下 ' + rest + '，平均分给 ' + (n - 1) + ' 个数：\n' +
+                   rest + ' ÷ ' + (n - 1) + ' = ' + (rest / (n - 1)) + '。'
+        };
+      }
+    },
+
+    {
+      id: 'calendar-sundays', topic: 'number', grade: '5', stars: 2,
+      make: function (r) {
+        var D = pick(r, [28, 29, 30, 31]);
+        var s = ri(r, 1, 7);
+        var c = 0;
+        for (var d = 1; d <= D; d++) if (((s - 1 + d - 1) % 7) + 1 === 7) c++;
+        return {
+          q: '某个月有 ' + D + ' 天，这个月的 1 号是星期' + U.weekday(s) +
+             '。这个月一共有几个星期日？',
+          answer: c,
+          params: { D: D, s: s },
+          explain: '1 号是星期' + U.weekday(s) + '，那么第一个星期日是 ' +
+                   (((7 - s) % 7) + 1) + ' 号。\n' +
+                   '之后每隔 7 天一个，一直数到 ' + D + ' 号，一共 ' + c + ' 个星期日。'
+        };
+      }
+    },
+
+    {
+      id: 'multiple-in-range', topic: 'number', grade: '5', stars: 3,
+      make: function (r) {
+        var k = pick(r, [3, 4, 6, 7, 8, 9, 11, 13]);
+        var lo = pick(r, [100, 200, 300]);
+        var hi = lo + pick(r, [200, 400, 600, 900]);
+        var c = 0;
+        for (var v = lo; v <= hi; v++) if (v % k === 0) c++;
+        return {
+          q: '在 ' + lo + ' 到 ' + hi + ' 之间（包含两端），能被 ' + k + ' 整除的数有多少个？',
+          answer: c,
+          params: { lo: lo, hi: hi, k: k },
+          explain: '先数 1 到 ' + hi + ' 里有多少个：' + hi + ' ÷ ' + k + ' = ' + Math.floor(hi / k) + ' 个；\n' +
+                   '再减掉 ' + lo + ' 之前就有的：' + (lo - 1) + ' ÷ ' + k + ' = ' +
+                   Math.floor((lo - 1) / k) + ' 个。\n' +
+                   Math.floor(hi / k) + ' − ' + Math.floor((lo - 1) / k) + ' = ' + c + ' 个。'
+        };
+      }
+    }
+
+  ];
+
+  /* 有些生成器在参数不巧时会返回 null，这里统一重试 */
+  function makeSafe(g, r, tries) {
+    for (var i = 0; i < (tries || 20); i++) {
+      var out = g.make(r);
+      if (out && typeof out.answer === 'number' && isFinite(out.answer)) return out;
+    }
+    return null;
+  }
+
+  function filter(opt) {
+    opt = opt || {};
+    return GEN.filter(function (g) {
+      if (opt.topic && opt.topic !== 'all' && g.topic !== opt.topic) return false;
+      if (opt.stars && opt.stars !== 'all' && g.stars !== Number(opt.stars)) return false;
+      if (opt.grade && opt.grade !== 'all') {
+        if (g.grade !== 'all' && String(g.grade) !== String(opt.grade)) return false;
+      }
+      return true;
+    });
+  }
+
+  /* 出题：opt = {topic, stars, grade, customList}，avoid 是最近做过的生成器 id 列表 */
+  function next(opt, seed, avoid) {
+    opt = opt || {};
+
+    /* 家长自己录入的题目 */
+    if (opt.topic === 'custom') {
+      var list = opt.customList || [];
+      if (list.length) {
+        var rc = U.rng(seed);
+        var c = pick(rc, list);
+        return {
+          genId: 'custom',
+          topic: 'custom',
+          topicName: '家长出的题',
+          grade: 'all',
+          stars: Math.min(3, Math.max(1, c.s || 2)),
+          points: Math.min(3, Math.max(1, c.s || 2)),
+          q: c.q,
+          answer: c.a,
+          explain: c.e || '这道题是家长自己加进来的。',
+          params: { custom: true },
+          seed: seed
+        };
+      }
+      opt = { grade: opt.grade, stars: opt.stars, topic: 'all' };
+    }
+
+    var pool = filter(opt);
+    if (!pool.length) pool = GEN.slice();
+    if (avoid && avoid.length) {
+      var fresh = pool.filter(function (g) { return avoid.indexOf(g.id) < 0; });
+      if (fresh.length) pool = fresh;
+    }
+    var r = U.rng(seed);
+    for (var attempt = 0; attempt < 30; attempt++) {
+      var g = pick(r, pool);
+      var out = makeSafe(g, r);
+      if (out) {
+        return {
+          genId: g.id,
+          topic: g.topic,
+          topicName: topicName(g.topic),
+          grade: g.grade,
+          stars: g.stars,
+          points: g.stars,
+          q: out.q,
+          answer: out.answer,
+          explain: out.explain,
+          params: out.params,
+          seed: seed
+        };
+      }
+    }
+    /* 兜底：不至于卡死 */
+    var g2 = pool[0];
+    var out2 = g2.make(U.rng(12345));
+    return {
+      genId: g2.id, topic: g2.topic, topicName: topicName(g2.topic),
+      grade: g2.grade, stars: g2.stars, points: g2.stars,
+      q: out2.q, answer: out2.answer, explain: out2.explain, params: out2.params, seed: 12345
+    };
+  }
+
+  G.TOPICS = TOPICS;
+  G.GEN = GEN;
+  G.topicName = topicName;
+  G.genFilter = filter;
+  G.nextQuestion = next;
+})(window.G);
+
+</script>
+  <script>
+/* ===== store.js ===== */
+/* 奥数豆豆 — 数据层：豆子钱包、积分兑换、流水、家长设置、导出导入 */
+window.G = window.G || {};
+(function (G) {
+  'use strict';
+
+  var U = G.U;
+  var KEY = 'mathbean_v1';
+  var MAX_LOG = 200;
+  var MAX_RECENT = 12;
+
+  function fresh() {
+    return {
+      v: 1,
+      beans: 0,             /* 钱包里的豆子 */
+      points: 0,            /* 攒着还没换成豆的积分（余数保留，不会白做） */
+      pointsPerBean: 2,     /* 几颗积分换 1 颗豆。1★题 1 分 → 默认做对 2 道基础题得 1 颗豆 */
+      goalName: '',
+      goalBeans: 0,
+      pin: '0000',
+      sound: true,
+      kidName: '',          /* 孩子名字（报告里会用到） */
+      answerMode: 'strict', /* 答案权限：strict 只有家长能看 / gentle 答错后给孩子看 */
+      custom: [],           /* 家长自己录入的题目 [{q, a, s, e}] */
+      stats: {
+        total: 0, correct: 0,
+        s1: { t: 0, c: 0 },
+        s2: { t: 0, c: 0 },
+        s3: { t: 0, c: 0 }
+      },
+      log: [],              /* [{t, type, delta, note}] type: earn | parent | spend */
+      recent: [],           /* 最近做过的题型，用来避免连着出同一种 */
+      streak: 0,
+      bestStreak: 0
+    };
+  }
+
+  var Store = {
+    data: fresh(),
+
+    /* ---------------- 读写 ---------------- */
+    load: function () {
+      try {
+        var s = window.localStorage.getItem(KEY);
+        if (s) {
+          var d = JSON.parse(s);
+          if (d && typeof d.beans === 'number') {
+            var base = fresh();
+            /* 逐个字段合并，容忍旧版本缺字段 */
+            for (var k in base) {
+              if (!Object.prototype.hasOwnProperty.call(base, k)) continue;
+              if (d[k] === undefined || d[k] === null) continue;
+              if (k === 'stats' && typeof d[k] === 'object') {
+                base.stats.total = d.stats.total || 0;
+                base.stats.correct = d.stats.correct || 0;
+                ['s1', 's2', 's3'].forEach(function (sk) {
+                  if (d.stats[sk]) {
+                    base.stats[sk].t = d.stats[sk].t || 0;
+                    base.stats[sk].c = d.stats[sk].c || 0;
+                  }
+                });
+              } else {
+                base[k] = d[k];
+              }
+            }
+            this.data = base;
+          }
+        }
+      } catch (e) { /* 隐私模式下就用内存数据 */ }
+      return this.data;
+    },
+
+    save: function () {
+      try { window.localStorage.setItem(KEY, JSON.stringify(this.data)); } catch (e) { /* 忽略 */ }
+    },
+
+    reset: function () {
+      this.data = fresh();
+      this.save();
+    },
+
+    /* ---------------- 统计与兑换 ---------------- */
+
+    /* 距离下一颗豆还差几分 */
+    pointsToNextBean: function () {
+      var need = this.data.pointsPerBean - this.data.points;
+      return need > 0 ? need : 0;
+    },
+    beanProgress: function () {
+      /* 0~1，用于画进度条 */
+      var p = this.data.pointsPerBean;
+      if (p <= 0) return 1;
+      return Math.min(1, this.data.points / p);
+    },
+
+    /* 答对一题：按难度加分，攒够分自动换豆 */
+    award: function (stars) {
+      var pts = stars || 1;
+      var d = this.data;
+      d.stats.total++;
+      d.stats.correct++;
+      var bucket = d.stats['s' + Math.min(3, Math.max(1, pts))];
+      if (bucket) { bucket.t++; bucket.c++; }
+      d.streak++;
+      if (d.streak > d.bestStreak) d.bestStreak = d.streak;
+
+      d.points += pts;
+      var gained = 0;
+      while (d.points >= d.pointsPerBean && d.pointsPerBean > 0) {
+        d.points -= d.pointsPerBean;
+        d.beans++;
+        gained++;
+      }
+      if (gained > 0) {
+        this.pushLog('earn', gained, pts + '★ 题答对，攒够 ' + d.pointsPerBean + ' 分');
+      }
+      this.save();
+      return { gained: gained, beans: d.beans, points: d.points, stars: pts };
+    },
+
+    /* 答错一题：只记统计，不倒扣豆子（不打击孩子） */
+    miss: function (stars) {
+      var pts = stars || 1;
+      var d = this.data;
+      d.stats.total++;
+      var bucket = d.stats['s' + Math.min(3, Math.max(1, pts))];
+      if (bucket) bucket.t++;
+      d.streak = 0;
+      this.save();
+    },
+
+    /* ---------------- 家长操作 ---------------- */
+    addBeans: function (n, note) {
+      n = Math.round(n);
+      if (!n) return this.data.beans;
+      this.data.beans = Math.max(0, this.data.beans + n);
+      this.pushLog('parent', n, note || '家长调整');
+      this.save();
+      return this.data.beans;
+    },
+
+    /* 兑换/花掉（比如拿豆换奖励） */
+    spendBeans: function (n, note) {
+      n = Math.round(n);
+      if (n <= 0) return this.data.beans;
+      var real = Math.min(n, this.data.beans);
+      this.data.beans -= real;
+      this.pushLog('spend', -real, note || '兑换奖励');
+      this.save();
+      return this.data.beans;
+    },
+
+    setRate: function (n) {
+      n = Math.round(n);
+      this.data.pointsPerBean = Math.max(1, Math.min(20, n));
+      this.save();
+      return this.data.pointsPerBean;
+    },
+
+    setGoal: function (name, beans) {
+      this.data.goalName = String(name || '').slice(0, 24);
+      this.data.goalBeans = Math.max(0, Math.round(beans || 0));
+      this.save();
+    },
+
+    setPin: function (p) {
+      p = String(p || '').replace(/\D/g, '').slice(0, 6);
+      if (p.length < 4) return false;
+      this.data.pin = p;
+      this.save();
+      return true;
+    },
+
+    setSound: function (on) {
+      this.data.sound = !!on;
+      this.save();
+    },
+
+    pushLog: function (type, delta, note) {
+      this.data.log.unshift({ t: Date.now(), type: type, delta: delta, note: note || '' });
+      if (this.data.log.length > MAX_LOG) this.data.log.length = MAX_LOG;
+    },
+
+    /* ---------------- 出题辅助 ---------------- */
+    addRecent: function (genId) {
+      var r = this.data.recent;
+      if (r.indexOf(genId) < 0) r.unshift(genId);
+      if (r.length > MAX_RECENT) r.length = MAX_RECENT;
+    },
+    recentIds: function () { return this.data.recent.slice(); },
+
+    /* ---------------- 备份 ---------------- */
+    exportText: function () {
+      return JSON.stringify(this.data, null, 1);
+    },
+    importText: function (s) {
+      try {
+        var d = JSON.parse(s);
+        if (!d || typeof d.beans !== 'number' || typeof d.points !== 'number') return '数据格式不对';
+        this.data = fresh();
+        for (var k in this.data) {
+          if (Object.prototype.hasOwnProperty.call(d, k) && d[k] !== undefined) this.data[k] = d[k];
+        }
+        this.save();
+        return null;   /* null = 成功 */
+      } catch (e) {
+        return '数据格式不对：' + e.message;
+      }
+    },
+
+    /* 正确率 */
+    accuracy: function () {
+      var s = this.data.stats;
+      if (!s.total) return 0;
+      return Math.round(s.correct / s.total * 100);
+    },
+
+    /* ---------------- 答案权限 ---------------- */
+    setAnswerMode: function (m) {
+      this.data.answerMode = (m === 'gentle') ? 'gentle' : 'strict';
+      this.save();
+      return this.data.answerMode;
+    },
+    /* 孩子能不能看到答案 */
+    kidCanSeeAnswer: function () {
+      return this.data.answerMode === 'gentle';
+    },
+
+    setKidName: function (n) {
+      this.data.kidName = String(n || '').slice(0, 12);
+      this.save();
+    },
+
+    /* ---------------- 家长自己录入题目 ----------------
+       答案必须是数字（App 用数字键盘作答，也方便判分） */
+    addCustom: function (q, a, stars, explain) {
+      q = String(q || '').trim();
+      a = String(a === undefined || a === null ? '' : a).trim();
+      if (!q) return '题干不能为空';
+      if (!/^\d{1,9}$/.test(a)) return '答案要填非负整数（这个 App 用数字键盘作答）';
+      var s = parseInt(stars, 10);
+      if (!(s >= 1 && s <= 3)) s = 2;
+      this.data.custom.push({
+        q: q.slice(0, 300),
+        a: parseInt(a, 10),
+        s: s,
+        e: String(explain || '').slice(0, 800)
+      });
+      this.save();
+      return null;
+    },
+    removeCustom: function (i) {
+      if (i >= 0 && i < this.data.custom.length) {
+        this.data.custom.splice(i, 1);
+        this.save();
+      }
+    },
+
+    /* ---------------- 家长报告（可以在别的电脑上查看） ---------------- */
+    buildReport: function () {
+      var d = this.data;
+      return {
+        v: 1,
+        n: d.kidName || '小朋友',
+        b: d.beans,          /* 豆子 */
+        p: d.points,         /* 零头积分 */
+        r: d.pointsPerBean,  /* 兑换比例 */
+        g: [d.goalName || '', d.goalBeans || 0],
+        s: [d.stats.total, d.stats.correct,
+            d.stats.s1.c, d.stats.s1.t, d.stats.s2.c, d.stats.s2.t, d.stats.s3.c, d.stats.s3.t,
+            d.bestStreak],
+        l: d.log.slice(0, 12).map(function (x) { return [x.t, x.type, x.delta, x.note]; }),
+        t: Date.now()
+      };
+    },
+    reportCode: function () {
+      return U.b64enc(JSON.stringify(this.buildReport()));
+    },
+    /* 静态方法：解析报告码（Node 测试里也直接用） */
+    parseReport: function (code) {
+      try {
+        var o = JSON.parse(U.b64dec(code));
+        if (!o || typeof o.b !== 'number') return null;
+        return o;
+      } catch (e) { return null; }
+    },
+
+    /* 报告链接：任何一台电脑打开这个链接都能看（数据全在链接里，不需要服务器） */
+    reportUrl: function () {
+      var base = String(window.location.href).split('#')[0].split('?')[0];
+      return base + '#report=' + this.reportCode();
+    }
+  };
+
+  G.Store = Store;
+})(window.G);
+
+</script>
+  <script>
+/* ===== audio.js ===== */
+/* 奥数豆豆 — WebAudio 音效（没有音频文件；iOS 需要首次触摸后才能出声） */
+window.G = window.G || {};
+(function (G) {
+  'use strict';
+
+  var S = {
+    ctx: null,
+    ready: false,
+    _throttle: {},
+
+    init: function () {
+      if (this.ctx) return;
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      try {
+        this.ctx = new AC();
+        this.master = this.ctx.createGain();
+        this.master.gain.value = 0.5;
+        this.master.connect(this.ctx.destination);
+        this.ready = true;
+      } catch (e) { this.ctx = null; this.ready = false; }
+    },
+
+    resume: function () {
+      if (this.ctx && this.ctx.state === 'suspended' && this.ctx.resume) {
+        try { this.ctx.resume(); } catch (e) { /* 忽略 */ }
+      }
+    },
+
+    enabled: function () {
+      var st = G.Store && G.Store.data;
+      return this.ready && this.ctx && (!st || st.sound !== false);
+    },
+
+    throttle: function (name, ms) {
+      var t = Date.now();
+      if (this._throttle[name] && t - this._throttle[name] < ms) return false;
+      this._throttle[name] = t;
+      return true;
+    },
+
+    tone: function (o) {
+      if (!this.enabled()) return;
+      var c = this.ctx, t = c.currentTime + (o.delay || 0);
+      var dur = o.dur || 0.16;
+      var osc = c.createOscillator(), g = c.createGain();
+      osc.type = o.type || 'sine';
+      osc.frequency.setValueAtTime(Math.max(1, o.freq), t);
+      if (o.freq2) osc.frequency.exponentialRampToValueAtTime(Math.max(1, o.freq2), t + dur);
+      var peak = o.gain === undefined ? 0.18 : o.gain;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), t + (o.attack || 0.008));
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(g); g.connect(this.master);
+      osc.start(t); osc.stop(t + dur + 0.03);
+    },
+
+    noise: function (o) {
+      if (!this.enabled()) return;
+      var c = this.ctx, t = c.currentTime + (o.delay || 0);
+      var dur = o.dur || 0.16;
+      var len = Math.max(1, Math.floor(c.sampleRate * dur));
+      var buf = c.createBuffer(1, len, c.sampleRate);
+      var d = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+      var src = c.createBufferSource(); src.buffer = buf;
+      var f = c.createBiquadFilter();
+      f.type = o.filter || 'bandpass';
+      f.frequency.value = o.freq || 1200;
+      var g = c.createGain();
+      g.gain.setValueAtTime(o.gain === undefined ? 0.14 : o.gain, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(f); f.connect(g); g.connect(this.master);
+      src.start(t);
+    },
+
+    /* ---- 具体音效 ---- */
+
+    click: function () { this.tone({ type: 'triangle', freq: 620, freq2: 780, dur: 0.07, gain: 0.10 }); },
+
+    /* 答对：上行三音，明快 */
+    correct: function () {
+      var self = this;
+      [660, 880, 1320].forEach(function (f, i) {
+        self.tone({ type: 'triangle', freq: f, dur: 0.16, gain: 0.16, delay: i * 0.075 });
+      });
+    },
+
+    /* 答错：温和的两声，不吓人 */
+    wrong: function () {
+      this.tone({ type: 'sine', freq: 300, freq2: 220, dur: 0.20, gain: 0.12 });
+      this.tone({ type: 'sine', freq: 240, freq2: 180, dur: 0.24, gain: 0.10, delay: 0.14 });
+    },
+
+    /* 拿到一颗豆：清脆的叮 */
+    bean: function () {
+      var self = this;
+      this.tone({ type: 'sine', freq: 1568, dur: 0.20, gain: 0.18 });
+      this.tone({ type: 'sine', freq: 2093, dur: 0.26, gain: 0.12, delay: 0.07 });
+      this.noise({ filter: 'highpass', freq: 4000, dur: 0.12, gain: 0.06, delay: 0.02 });
+    },
+
+    /* 连续答对的小奖励音 */
+    streak: function (n) {
+      var base = 880 + Math.min(6, n) * 110;
+      this.tone({ type: 'triangle', freq: base, freq2: base * 1.5, dur: 0.22, gain: 0.14 });
+    },
+
+    /* 完成目标 */
+    fanfare: function () {
+      var self = this;
+      [523, 659, 784, 1046, 1318].forEach(function (f, i) {
+        self.tone({ type: 'triangle', freq: f, dur: 0.30, gain: 0.15, delay: i * 0.1 });
+      });
+    }
+  };
+
+  S.master = null;
+  G.Sound = S;
+})(window.G);
+
+</script>
+  <script>
+/* ===== fx.js ===== */
+/* 奥数豆豆 — 视觉特效：彩屑、豆子飞进钱包、提示气泡 */
+window.G = window.G || {};
+(function (G) {
+  'use strict';
+
+  var FX = {
+    canvas: null,
+    ctx: null,
+    parts: [],
+    running: false,
+    last: 0,
+
+    init: function () {
+      var cv = document.createElement('canvas');
+      cv.id = 'fx';
+      cv.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;' +
+        'pointer-events:none;z-index:50;';
+      document.body.appendChild(cv);
+      this.canvas = cv;
+      this.ctx = cv.getContext('2d');
+      this.resize();
+      var self = this;
+      window.addEventListener('resize', function () { self.resize(); });
+      return this;
+    },
+
+    resize: function () {
+      if (!this.canvas) return;
+      var dpr = Math.min(2, window.devicePixelRatio || 1);
+      var w = window.innerWidth, h = window.innerHeight;
+      this.canvas.width = Math.floor(w * dpr);
+      this.canvas.height = Math.floor(h * dpr);
+      this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      this.w = w; this.h = h;
+    },
+
+    /* 从屏幕坐标喷一簇彩屑 */
+    burst: function (x, y, opt) {
+      opt = opt || {};
+      var n = opt.count || 26;
+      var colors = opt.colors || ['#f0a94a', '#6bc06f', '#7fc4e8', '#e88fb0', '#f6d365', '#b9a3dd'];
+      for (var i = 0; i < n; i++) {
+        var a = (opt.angle === undefined ? -Math.PI / 2 : opt.angle) +
+                (Math.random() - 0.5) * (opt.spread || Math.PI * 1.1);
+        var sp = (opt.speed || 320) * (0.45 + Math.random() * 0.85);
+        this.parts.push({
+          x: x, y: y,
+          vx: Math.cos(a) * sp,
+          vy: Math.sin(a) * sp,
+          g: opt.gravity === undefined ? 900 : opt.gravity,
+          life: 0.9 + Math.random() * 0.7,
+          maxLife: 0,
+          size: (opt.size || 9) * (0.6 + Math.random() * 0.8),
+          color: colors[(Math.random() * colors.length) | 0],
+          rot: Math.random() * Math.PI,
+          vr: (Math.random() - 0.5) * 12,
+          round: Math.random() < 0.4
+        });
+      }
+      for (var k = 0; k < this.parts.length; k++) {
+        if (!this.parts[k].maxLife) this.parts[k].maxLife = this.parts[k].life;
+      }
+      this.start();
+    },
+
+    start: function () {
+      if (this.running) return;
+      this.running = true;
+      this.last = 0;
+      var self = this;
+      requestAnimationFrame(function (t) { self.tick(t); });
+    },
+
+    tick: function (now) {
+      if (!this.last) this.last = now;
+      var dt = Math.min(0.05, (now - this.last) / 1000);
+      this.last = now;
+
+      var arr = this.parts;
+      for (var i = arr.length - 1; i >= 0; i--) {
+        var p = arr[i];
+        p.life -= dt;
+        if (p.life <= 0) { arr.splice(i, 1); continue; }
+        p.vy += p.g * dt;
+        p.vx *= 0.99;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.rot += p.vr * dt;
+      }
+
+      var c = this.ctx;
+      c.clearRect(0, 0, this.w, this.h);
+      for (var j = 0; j < arr.length; j++) {
+        var q = arr[j];
+        var t = Math.max(0, q.life / q.maxLife);
+        c.save();
+        c.globalAlpha = Math.min(1, t * 1.6);
+        c.translate(q.x, q.y);
+        c.rotate(q.rot);
+        c.fillStyle = q.color;
+        if (q.round) {
+          c.beginPath(); c.arc(0, 0, q.size * 0.42, 0, Math.PI * 2); c.fill();
+        } else {
+          c.fillRect(-q.size / 2, -q.size / 4, q.size, q.size / 2);
+        }
+        c.restore();
+      }
+
+      if (arr.length) {
+        var self = this;
+        requestAnimationFrame(function (tt) { self.tick(tt); });
+      } else {
+        this.running = false;
+        this.ctx.clearRect(0, 0, this.w, this.h);
+      }
+    },
+
+    /* 一颗豆从屏幕某处飞向目标元素 */
+    beanFly: function (fromX, fromY, targetEl, onDone) {
+      if (!targetEl) { if (onDone) onDone(); return; }
+      var rect = targetEl.getBoundingClientRect();
+      var toX = rect.left + rect.width / 2;
+      var toY = rect.top + rect.height / 2;
+
+      var el = document.createElement('div');
+      el.className = 'bean-fly';
+      el.textContent = '🫘';
+      el.style.left = fromX + 'px';
+      el.style.top = fromY + 'px';
+      document.body.appendChild(el);
+
+      var dx = toX - fromX, dy = toY - fromY;
+      requestAnimationFrame(function () {
+        el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(0.55) rotate(360deg)';
+        el.style.opacity = '0.25';
+      });
+
+      setTimeout(function () {
+        if (el.parentNode) el.parentNode.removeChild(el);
+        if (onDone) onDone();
+      }, 760);
+    },
+
+    /* 顶部小提示 */
+    toast: function (text, kind) {
+      var el = document.createElement('div');
+      el.className = 'toast' + (kind ? ' toast-' + kind : '');
+      el.textContent = text;
+      document.body.appendChild(el);
+      setTimeout(function () { el.classList.add('toast-out'); }, 1500);
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2100);
+    }
+  };
+
+  G.FX = FX;
+})(window.G);
+
+</script>
+  <script>
+/* ===== app.js ===== */
+/* 奥数豆豆 — 界面与流程 */
+window.G = window.G || {};
+(function (G) {
+  'use strict';
+  var U = G.U, Store = G.Store, Sound = G.Sound, FX = G.FX;
+  var el = U.el;
+
+  /* 豆子图标：用内联 SVG 画，保证在任何 iPad 上都能显示（不依赖 emoji 字体） */
+  function beanIcon(size) {
+    return '<svg class="bean-svg" viewBox="0 0 100 100" width="' + size + '" height="' + size + '" aria-hidden="true">' +
+      '<ellipse cx="52" cy="56" rx="33" ry="25" transform="rotate(-22 52 56)" fill="#e9bd76" stroke="#c9964a" stroke-width="4"/>' +
+      '<ellipse cx="43" cy="48" rx="9" ry="6" transform="rotate(-22 43 48)" fill="#f6d9a5" opacity="0.85"/>' +
+      '<path d="M50 32 q4 -16 20 -19" stroke="#63b96a" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+      '<ellipse cx="73" cy="12" rx="11" ry="6.5" transform="rotate(-22 73 12)" fill="#6bc06f"/>' +
+      '</svg>';
+  }
+  G.beanIcon = beanIcon;
+
+  var App = {
+    state: {
+      view: 'home',
+      opt: { grade: 'all', stars: 'all', topic: 'all' },
+      quiz: null,
+      input: '',
+      phase: 'answer',
+      attempts: 0,
+      revealed: false,      /* 家长用密码临时解锁了本题答案 */
+      result: null,
+      seed: 0,
+      gateInput: '',
+      gateMode: 'parent',   /* parent 进家长面板 / reveal 解锁本题答案 */
+      unlocked: false,
+      report: null          /* 通过报告链接进来时，这里放报告数据 */
+    },
+    root: null,
+    view: null,
+    tabs: null,
+
+    /* ============================================================
+       启动
+       ============================================================ */
+    start: function () {
+      Store.load();
+      Sound.init();
+      FX.init();
+
+      /* 家长报告链接：任何一台电脑打开 #report=xxx 都能只读查看进度 */
+      var hash = String(window.location.hash || '');
+      var qsEarly = new URLSearchParams(window.location.search);
+      var reportCode = null;
+      if (hash.indexOf('#report=') === 0) reportCode = hash.slice(8);
+      else if (qsEarly.has('report')) reportCode = qsEarly.get('report');
+      if (reportCode !== null) {
+        this.state.report = Store.parseReport(reportCode);
+        this.state.view = 'report';
+        this.mount();
+        this.render();
+        return;
+      }
+
+      var params = new URLSearchParams(window.location.search);
+      this.state.seed = params.has('seed') ? parseInt(params.get('seed'), 10) : 0;
+
+      if (params.has('demo')) this.seedDemoData();
+      if (params.has('grade')) this.state.opt.grade = params.get('grade');
+      if (params.has('stars')) this.state.opt.stars = params.get('stars');
+
+      var self = this;
+      document.addEventListener('touchstart', function once() {
+        Sound.init(); Sound.resume();
+        document.removeEventListener('touchstart', once);
+      }, { passive: true });
+      document.addEventListener('mousedown', function () { Sound.init(); Sound.resume(); });
+
+      var v = params.get('view');
+      if (v) this.state.view = v;
+      if (this.state.view === 'quiz') this.newQuestion();
+      if (this.state.view === 'parent') this.state.unlocked = true;
+
+      this.mount();
+      this.render();
+
+      /* 截图/调试用：自动填一个答案并提交，方便看答对/答错两种界面 */
+      if (params.has('auto')) this.autoAnswer(params.get('auto'));
+      /* 截图用：把页面滚到指定位置（长页面截图） */
+      if (params.has('scroll')) this.root.scrollTop = parseInt(params.get('scroll'), 10) || 0;
+    },
+
+    autoAnswer: function (mode) {
+      if (!this.state.quiz) this.newQuestion();
+      var q = this.state.quiz;
+      if (mode === 'no2') {
+        /* 连续答错两次，看严格模式的终态 */
+        this.state.input = String(q.answer + 1); this.submit();
+        this.state.input = String(q.answer + 2); this.submit();
+        return;
+      }
+      this.state.input = (mode === 'no') ? String(q.answer + 1) : String(q.answer);
+      this.submit();
+    },
+
+    /* 截图/演示用：造一些数据，好看清各个界面 */
+    seedDemoData: function () {
+      var d = Store.data;
+      d.beans = 42;
+      d.points = 1;
+      d.pointsPerBean = 2;
+      d.goalName = '去游乐园';
+      d.goalBeans = 60;
+      d.stats = { total: 128, correct: 103, s1: { t: 52, c: 47 }, s2: { t: 46, c: 36 }, s3: { t: 30, c: 20 } };
+      d.streak = 3;
+      d.bestStreak = 9;
+      d.log = [
+        { t: Date.now() - 60000, type: 'earn', delta: 1, note: '2★ 题答对，攒够 2 分' },
+        { t: Date.now() - 360000, type: 'parent', delta: 10, note: '周末奖励' },
+        { t: Date.now() - 900000, type: 'spend', delta: -15, note: '换了一次冰淇淋' },
+        { t: Date.now() - 1800000, type: 'earn', delta: 2, note: '3★ 题答对，攒够 2 分' }
+      ];
+    },
+
+    mount: function () {
+      this.root = document.getElementById('view');
+      this.tabs = document.getElementById('tabs');
+      var self = this;
+
+      /* 钱包标签用内联 SVG 豆子，避免老 iPad 没有 🫘（Unicode 14）这个 emoji */
+      var walletTab = this.tabs.querySelector('[data-nav="wallet"]');
+      if (walletTab) {
+        var label = el('span', { text: '钱包' });
+        walletTab.innerHTML = '';
+        walletTab.appendChild(el('span', { class: 'tab-icon', html: beanIcon(26) }));
+        walletTab.appendChild(label);
+      }
+
+      this.tabs.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-nav]');
+        if (!b) return;
+        Sound.click();
+        var nav = b.getAttribute('data-nav');
+        if (nav === 'parent') {
+          self.state.view = self.state.unlocked ? 'parent' : 'gate';
+          self.state.gateInput = '';
+        } else {
+          if (nav === 'quiz' && !self.state.quiz) self.newQuestion();
+          self.state.view = nav;
+        }
+        self.render();
+      });
+    },
+
+    /* ============================================================
+       出题
+       ============================================================ */
+    newQuestion: function () {
+      /* 带 ?seed= 时完全确定（截图/测试用）；正常玩的时候用随机种子 */
+      var seed = this.state.seed || ((Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0);
+      var opt = this.state.opt;
+      var q = G.nextQuestion({
+        grade: opt.grade, stars: opt.stars, topic: opt.topic,
+        customList: Store.data.custom
+      }, seed, Store.recentIds());
+      if (q && q.genId && q.genId !== 'custom') Store.addRecent(q.genId);
+      this.state.quiz = q;
+      this.state.input = '';
+      this.state.phase = 'answer';
+      this.state.attempts = 0;
+      this.state.revealed = false;
+      this.state.result = null;
+    },
+
+    submit: function () {
+      var st = this.state;
+      if (st.phase !== 'answer') return;
+      if (st.input === '') { FX.toast('先输入答案哦', 'warn'); return; }
+      var val = parseInt(st.input, 10);
+      var ok = (val === st.quiz.answer);
+      st.attempts++;
+
+      if (ok) {
+        var r = Store.award(st.quiz.stars);
+        st.result = r;
+        st.phase = 'correct';
+        Sound.correct();
+        if (r.gained > 0) Sound.bean();
+        if (Store.data.streak >= 3) Sound.streak(Store.data.streak);
+
+        /* 特效：在答案区域放彩屑；拿到豆子就让豆子飞进钱包 */
+        var rect = this.view.querySelector('.answer-box');
+        var cx = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+        var cy = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+        FX.burst(cx, cy, { count: 30, speed: 380 });
+        if (r.gained > 0) {
+          Sound.bean();
+          var target = document.querySelector('[data-nav="wallet"]');
+          for (var i = 0; i < r.gained; i++) {
+            (function (k) {
+              setTimeout(function () {
+                FX.beanFly(cx, cy - 20, target, function () {
+                  var cur = document.querySelector('.wallet-beans-num');
+                  if (cur) { cur.classList.remove('pop'); void cur.offsetWidth; cur.classList.add('pop'); }
+                });
+              }, k * 140);
+            })(i);
+          }
+        }
+      } else {
+        /* 严格模式下先给孩子一次重来的机会，但不告诉他答案 */
+        if (!Store.kidCanSeeAnswer() && !st.revealed && st.attempts < 2) {
+          Sound.wrong();
+          FX.toast('不对哦，再想想～', 'warn');
+          st.input = '';
+        } else {
+          Store.miss(st.quiz.stars);
+          st.phase = 'wrong';
+          Sound.wrong();
+        }
+      }
+      this.render();
+    },
+
+    giveUp: function () {
+      if (this.state.phase !== 'answer') return;
+      Store.miss(this.state.quiz.stars);
+      this.state.phase = 'skipped';
+      this.state.input = '';
+      Sound.wrong();
+      this.render();
+    },
+
+    key: function (k) {
+      var st = this.state;
+      if (st.phase !== 'answer') return;
+      Sound.click();
+      if (k === 'del') { st.input = st.input.slice(0, -1); }
+      else if (k === 'clear') { st.input = ''; }
+      else if (st.input.length < 6) { st.input = (st.input === '0' ? '' : st.input) + k; }
+      this.updateAnswerBox();
+    },
+
+    updateAnswerBox: function () {
+      var box = this.view.querySelector('.answer-value');
+      if (box) {
+        box.textContent = this.state.input === '' ? '?' : U.fmt(this.state.input);
+        box.classList.toggle('empty', this.state.input === '');
+      }
+      var btn = this.view.querySelector('.pad-submit');
+      if (btn) btn.classList.toggle('ready', this.state.input !== '');
+    },
+
+    /* ============================================================
+       渲染
+       ============================================================ */
+    render: function () {
+      var st = this.state;
+      U.clear(this.root);
+      this.root.className = 'view view-' + st.view;
+
+      if (st.view === 'home') this.root.appendChild(this.viewHome());
+      else if (st.view === 'quiz') this.root.appendChild(this.viewQuiz());
+      else if (st.view === 'wallet') this.root.appendChild(this.viewWallet());
+      else if (st.view === 'gate') this.root.appendChild(this.viewGate());
+      else if (st.view === 'parent') this.root.appendChild(this.viewParent());
+      else if (st.view === 'report') this.root.appendChild(this.viewReport());
+
+      /* 报告模式不显示底部导航 */
+      this.tabs.style.display = (st.view === 'report') ? 'none' : '';
+
+      /* 底部导航高亮 */
+      var nav = st.view === 'quiz' ? 'quiz' : (st.view === 'wallet' ? 'wallet' :
+        (st.view === 'parent' || st.view === 'gate' ? 'parent' : 'home'));
+      U.$$('[data-nav]', this.tabs).forEach(function (b) {
+        b.classList.toggle('on', b.getAttribute('data-nav') === nav);
+      });
+
+      this.view = this.root;
+    },
+
+    /* ---------- 通用组件 ---------- */
+    beanChip: function (n, cls) {
+      return el('div', { class: 'bean-chip ' + (cls || '') }, [
+        el('span', { class: 'bean-icon', html: beanIcon(cls === 'big' ? 54 : 42) }),
+        el('span', { class: 'bean-num wallet-beans-num', text: U.fmt(n) })
+      ]);
+    },
+
+    /* 距离下一颗豆的进度 */
+    beanProgressBar: function () {
+      var pct = Math.round(Store.beanProgress() * 100);
+      var need = Store.pointsToNextBean();
+      return el('div', { class: 'progress-wrap' }, [
+        el('div', { class: 'progress-track' }, [
+          el('div', { class: 'progress-fill', style: { width: pct + '%' } })
+        ]),
+        el('div', { class: 'progress-text' }, need > 0
+          ? '再答对 ' + need + ' 分就能得到 1 颗豆' + (Store.data.points > 0 ? '（已有 ' + Store.data.points + ' 分）' : '')
+          : '马上就能得到 1 颗豆！')
+      ]);
+    },
+
+    /* ---------- 首页 ---------- */
+    viewHome: function () {
+      var d = Store.data;
+      var self = this;
+
+      var gradeRow = el('div', { class: 'opt-row' }, [
+        el('div', { class: 'opt-label', text: '年级' }),
+        el('div', { class: 'chips' }, [
+          ['all', '都行'], ['4', '四年级'], ['5', '五年级']
+        ].map(function (g) {
+          return el('button', {
+            class: 'chip' + (self.state.opt.grade === g[0] ? ' on' : ''),
+            text: g[1],
+            onclick: function () { Sound.click(); self.state.opt.grade = g[0]; self.render(); }
+          });
+        }))
+      ]);
+
+      var starRow = el('div', { class: 'opt-row' }, [
+        el('div', { class: 'opt-label', text: '难度' }),
+        el('div', { class: 'chips' }, [
+          ['all', '都行'], ['1', '★ 简单'], ['2', '★★ 中等'], ['3', '★★★ 挑战']
+        ].map(function (g) {
+          return el('button', {
+            class: 'chip' + (self.state.opt.stars === g[0] ? ' on' : ''),
+            text: g[1],
+            onclick: function () { Sound.click(); self.state.opt.stars = g[0]; self.render(); }
+          });
+        }))
+      ]);
+
+      var topicRow = el('div', { class: 'opt-row' }, [
+        el('div', { class: 'opt-label', text: '题型' }),
+        el('div', { class: 'chips' }, [['all', '混合']].concat(
+          G.TOPICS.map(function (t) { return [t.id, t.name]; })
+        ).concat(
+          d.custom.length ? [['custom', '家长出的题 ' + d.custom.length]] : []
+        ).map(function (g) {
+          return el('button', {
+            class: 'chip' + (self.state.opt.topic === g[0] ? ' on' : ''),
+            text: g[1],
+            onclick: function () { Sound.click(); self.state.opt.topic = g[0]; self.render(); }
+          });
+        }))
+      ]);
+
+      var goalBar = null;
+      if (d.goalBeans > 0) {
+        var gp = Math.min(100, Math.round(d.beans / d.goalBeans * 100));
+        goalBar = el('div', { class: 'goal' }, [
+          el('div', { class: 'goal-head' }, [
+            el('span', { text: '🎯 目标：' + d.goalName }),
+            el('span', { class: 'goal-num', text: d.beans + ' / ' + d.goalBeans })
+          ]),
+          el('div', { class: 'progress-track' }, [
+            el('div', { class: 'progress-fill goal-fill', style: { width: gp + '%' } })
+          ])
+        ]);
+      }
+
+      return el('div', { class: 'page' }, [
+        el('div', { class: 'hero' }, [
+          el('div', { class: 'hero-left' }, [
+            el('div', { class: 'hero-label', text: '我的豆子' }),
+            this.beanChip(d.beans)
+          ]),
+          el('div', { class: 'hero-right' }, [
+            el('div', { class: 'hero-stat', text: '答对 ' + d.stats.correct + ' 题' }),
+            el('div', { class: 'hero-stat', text: '正确率 ' + Store.accuracy() + '%' })
+          ])
+        ]),
+
+        goalBar,
+
+        el('button', {
+          class: 'btn-primary big',
+          onclick: function () {
+            Sound.click();
+            self.newQuestion();
+            self.state.view = 'quiz';
+            self.render();
+          }
+        }, ['开始做题 ✏️']),
+
+        this.beanProgressBar(),
+
+        el('div', { class: 'card' }, [el('div', { class: 'card-title', text: '出题设置' }), gradeRow, starRow, topicRow]),
+
+        el('div', { class: 'tip' }, [
+          '答对按难度得 ',
+          el('b', { text: '★=1 分 · ★★=2 分 · ★★★=3 分' }),
+          '，每 ' + d.pointsPerBean + ' 分换 1 颗豆（也就是做对 ' + d.pointsPerBean + ' 道基础题得一颗豆）。'
+        ])
+      ]);
+    },
+
+    /* ---------- 做题 ---------- */
+    viewQuiz: function () {
+      var st = this.state, self = this;
+      if (!st.quiz) this.newQuestion();
+      var q = st.quiz;
+
+      var stars = '';
+      for (var i = 0; i < q.stars; i++) stars += '★';
+
+      /* 孩子能不能看到答案：由家长设置决定；家长用密码解锁后也可以临时看 */
+      var showAnswer = (st.phase === 'correct') ||
+        ((st.phase === 'wrong' || st.phase === 'skipped') && (Store.kidCanSeeAnswer() || st.revealed));
+
+      var head = el('div', { class: 'quiz-head' }, [
+        el('span', { class: 'tag', text: q.topicName }),
+        el('span', { class: 'tag tag-star', text: stars + ' 本题 ' + q.stars + ' 分' })
+      ]);
+
+      var qText = q.q.split('\n').map(function (line) {
+        return el('div', { class: 'q-line', text: line });
+      });
+
+      var answerArea;
+      if (st.phase === 'answer') {
+        answerArea = el('div', { class: 'answer-box' }, [
+          el('div', { class: 'answer-label', text: st.attempts > 0 ? '再想想，重新填一个答案' : '你的答案' }),
+          el('div', { class: 'answer-value empty', text: '?' })
+        ]);
+      } else if (st.phase === 'correct') {
+        var r = st.result;
+        answerArea = el('div', { class: 'answer-box ok' }, [
+          el('div', { class: 'answer-label', text: '答对啦！' }),
+          el('div', { class: 'answer-value', text: U.fmt(q.answer) }),
+          el('div', { class: 'answer-note' }, [
+            '+' + q.stars + ' 分',
+            r.gained > 0 ? el('span', { class: 'got-bean' }, ['　',
+              el('span', { class: 'inline-bean', html: beanIcon(22) }), '　',
+              el('b', { text: '得到 ' + r.gained + ' 颗豆！' })]) : null
+          ])
+        ]);
+      } else if (showAnswer) {
+        answerArea = el('div', { class: 'answer-box no' }, [
+          el('div', { class: 'answer-label', text: '正确答案' }),
+          el('div', { class: 'answer-value', text: U.fmt(q.answer) })
+        ]);
+      } else {
+        /* 严格模式：只告诉孩子没做对，不给答案 */
+        answerArea = el('div', { class: 'answer-box no' }, [
+          el('div', { class: 'answer-label', text: st.phase === 'skipped' ? '这题先跳过了' : '这次没做对' }),
+          el('div', { class: 'answer-note', text: '想一想哪里卡住了，可以问爸爸妈妈一起看～' }),
+          el('div', { class: 'answer-note small', text: '答案只有家长能看到' })
+        ]);
+      }
+
+      var explain = null;
+      if (showAnswer) {
+        explain = el('div', { class: 'card explain' }, [
+          el('div', { class: 'card-title', text: '解题思路' }),
+          el('div', { class: 'explain-body' }, String(q.explain || '').split('\n').map(function (l) {
+            return el('div', { text: l });
+          }))
+        ]);
+      }
+
+      var pad, actions;
+
+      if (st.phase === 'answer') {
+        var keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'del'];
+        pad = el('div', { class: 'pad' },
+          keys.map(function (k) {
+            return el('button', {
+              class: 'pad-key' + (k === 'clear' || k === 'del' ? ' pad-fn' : ''),
+              text: k === 'clear' ? '清空' : (k === 'del' ? '⌫' : k),
+              onclick: function () { self.key(k); }
+            });
+          }).concat([
+            el('button', { class: 'pad-key pad-submit', text: '提交', onclick: function () { self.submit(); } })
+          ])
+        );
+        actions = el('div', { class: 'quiz-actions' }, [
+          el('button', {
+            class: 'btn-ghost', text: '跳过这题',
+            onclick: function () { self.giveUp(); }
+          }),
+          el('button', {
+            class: 'btn-ghost', text: '换一题',
+            onclick: function () { Sound.click(); self.newQuestion(); self.render(); }
+          })
+        ]);
+      } else {
+        var canRetry = (st.phase === 'wrong' && st.attempts < 2 && !st.revealed);
+        pad = el('div', { class: 'pad-actions' }, [
+          canRetry
+            ? el('button', {
+                class: 'btn-primary big', text: '再试一次',
+                onclick: function () {
+                  Sound.click();
+                  st.phase = 'answer';
+                  st.input = '';
+                  self.render();
+                }
+              })
+            : el('button', {
+                class: 'btn-primary big', text: '下一题 →',
+                onclick: function () { Sound.click(); self.newQuestion(); self.render(); }
+              })
+        ]);
+        actions = el('div', { class: 'quiz-actions' }, [
+          canRetry
+            ? el('button', {
+                class: 'btn-ghost', text: '下一题',
+                onclick: function () { Sound.click(); self.newQuestion(); self.render(); }
+              })
+            : null,
+          (!showAnswer)
+            ? el('button', {
+                class: 'btn-ghost', text: '🔒 家长查看答案',
+                onclick: function () {
+                  Sound.click();
+                  st.gateMode = 'reveal';
+                  st.gateInput = '';
+                  st.view = 'gate';
+                  self.render();
+                }
+              })
+            : null
+        ]);
+      }
+
+      return el('div', { class: 'page' }, [head, el('div', { class: 'qtext' }, qText),
+        answerArea, explain, actions, pad,
+        (st.phase === 'answer') ? null : this.beanProgressBar()]);
+    },
+
+    /* ---------- 钱包 ---------- */
+    viewWallet: function () {
+      var d = Store.data;
+      var self = this;
+      var logs = d.log.slice(0, 30);
+
+      var goal = null;
+      if (d.goalBeans > 0) {
+        var gp = Math.min(100, Math.round(d.beans / d.goalBeans * 100));
+        goal = el('div', { class: 'goal' }, [
+          el('div', { class: 'goal-head' }, [
+            el('span', { text: '🎯 ' + d.goalName }),
+            el('span', { class: 'goal-num', text: d.beans + ' / ' + d.goalBeans + ' 颗' })
+          ]),
+          el('div', { class: 'progress-track' }, [
+            el('div', { class: 'progress-fill goal-fill', style: { width: gp + '%' } })
+          ])
+        ]);
+      }
+
+      return el('div', { class: 'page' }, [
+        el('div', { class: 'hero wallet-hero' }, [
+          el('div', { class: 'hero-label', text: '我的豆子钱包' }),
+          this.beanChip(d.beans, 'big'),
+          el('div', { class: 'hero-stat', text: '还有 ' + d.points + ' 分没换 · 每 ' + d.pointsPerBean + ' 分 = 1 颗豆' })
+        ]),
+
+        goal,
+        this.beanProgressBar(),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '最近记录' }),
+          logs.length ? el('div', { class: 'log' }, logs.map(function (it) {
+            var cls = it.type === 'earn' ? 'log-earn' : (it.type === 'spend' ? 'log-spend' : 'log-parent');
+            var sign = it.delta > 0 ? '+' : '';
+            return el('div', { class: 'log-item ' + cls }, [
+              el('span', { class: 'log-delta', text: sign + it.delta }),
+              el('span', { class: 'log-note', text: it.note || (it.type === 'earn' ? '做对题目' : '') }),
+              el('span', { class: 'log-time', text: U.timeText(it.t) })
+            ]);
+          })) : el('div', { class: 'muted', text: '还没有记录，去做几道题吧～' })
+        ]),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '答题统计' }),
+          el('div', { class: 'stats-grid' }, [
+            el('div', { class: 'stat' }, [el('b', { text: String(d.stats.total) }), el('span', { text: '总题数' })]),
+            el('div', { class: 'stat' }, [el('b', { text: d.stats.correct + '' }), el('span', { text: '答对' })]),
+            el('div', { class: 'stat' }, [el('b', { text: Store.accuracy() + '%' }), el('span', { text: '正确率' })]),
+            el('div', { class: 'stat' }, [el('b', { text: String(d.bestStreak) }), el('span', { text: '最长连对' })])
+          ]),
+          el('div', { class: 'stars-stat' }, [
+            this.starStat('★ 简单', d.stats.s1),
+            this.starStat('★★ 中等', d.stats.s2),
+            this.starStat('★★★ 挑战', d.stats.s3)
+          ])
+        ])
+      ]);
+    },
+
+    starStat: function (label, s) {
+      var pct = s.t ? Math.round(s.c / s.t * 100) : 0;
+      return el('div', { class: 'stars-row' }, [
+        el('span', { class: 'stars-label', text: label }),
+        el('div', { class: 'progress-track thin' }, [
+          el('div', { class: 'progress-fill', style: { width: pct + '%' } })
+        ]),
+        el('span', { class: 'stars-num', text: s.c + '/' + s.t })
+      ]);
+    },
+
+    /* ---------- 只读家长报告（任何电脑打开链接都能看） ---------- */
+    viewReport: function () {
+      var r = this.state.report;
+      if (!r) {
+        return el('div', { class: 'page center' }, [
+          el('div', { class: 'card' }, [
+            el('div', { class: 'card-title big-title', text: '报告链接无效' }),
+            el('div', { class: 'muted', text: '链接可能被聊天软件截断了。让家长把完整链接重新发一次试试。' })
+          ])
+        ]);
+      }
+      var s = r.s || [0, 0, 0, 0, 0, 0, 0, 0, 0];
+      var acc = s[0] ? Math.round(s[1] / s[0] * 100) : 0;
+      var rate = r.r || 2;
+      var goal = r.g || ['', 0];
+      var gp = goal[1] ? Math.min(100, Math.round(r.b / goal[1] * 100)) : 0;
+
+      var rows = [
+        ['总题数', String(s[0])],
+        ['答对', String(s[1])],
+        ['正确率', acc + '%'],
+        ['最长连对', String(s[8] || 0)],
+        ['★ 简单', (s[2] || 0) + ' / ' + (s[3] || 0)],
+        ['★★ 中等', (s[4] || 0) + ' / ' + (s[5] || 0)],
+        ['★★★ 挑战', (s[6] || 0) + ' / ' + (s[7] || 0)]
+      ];
+
+      var logs = (r.l || []).map(function (it) {
+        var sign = it[2] > 0 ? '+' : '';
+        var cls = it[1] === 'earn' ? 'log-earn' : (it[1] === 'spend' ? 'log-spend' : 'log-parent');
+        return el('div', { class: 'log-item ' + cls }, [
+          el('span', { class: 'log-delta', text: sign + it[2] }),
+          el('span', { class: 'log-note', text: it[3] || '' }),
+          el('span', { class: 'log-time', text: U.timeText(it[0]) })
+        ]);
+      });
+
+      return el('div', { class: 'page' }, [
+        el('div', { class: 'hero wallet-hero' }, [
+          el('div', { class: 'hero-label', text: (r.n || '小朋友') + ' 的豆子报告' }),
+          this.beanChip(r.b, 'big'),
+          el('div', { class: 'hero-stat', text: '还有 ' + r.p + ' 分没换 · 每 ' + rate + ' 分 = 1 颗豆' })
+        ]),
+        goal[1] ? el('div', { class: 'goal' }, [
+          el('div', { class: 'goal-head' }, [
+            el('span', { text: '🎯 ' + goal[0] }),
+            el('span', { class: 'goal-num', text: r.b + ' / ' + goal[1] + ' 颗' })
+          ]),
+          el('div', { class: 'progress-track' }, [
+            el('div', { class: 'progress-fill goal-fill', style: { width: gp + '%' } })
+          ])
+        ]) : null,
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '学习统计' }),
+          el('div', { class: 'kv' }, rows.map(function (kv) {
+            return el('div', { class: 'kv-row' }, [
+              el('span', { class: 'kv-k', text: kv[0] }),
+              el('span', { class: 'kv-v', text: kv[1] })
+            ]);
+          }))
+        ]),
+        logs.length ? el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '最近记录' }),
+          el('div', { class: 'log' }, logs)
+        ]) : null,
+        el('div', { class: 'tip' }, [
+          '这份报告生成于 ' + U.timeText(r.t || Date.now()) + '，是那一刻的快照。',
+          el('div', { class: 'small', text: '想看最新数据，让孩子在 App 里重新生成一次报告链接。' })
+        ])
+      ]);
+    },
+
+    /* ---------- 家长密码 ---------- */
+    viewGate: function () {
+      var self = this;
+      var st = this.state;
+      var dots = el('div', { class: 'pin-dots' }, [0, 1, 2, 3].map(function (i) {
+        return el('span', { class: 'dot' + (st.gateInput.length > i ? ' on' : '') });
+      }));
+
+      function press(k) {
+        Sound.click();
+        if (k === 'del') st.gateInput = st.gateInput.slice(0, -1);
+        else if (st.gateInput.length < 6) st.gateInput += k;
+        if (st.gateInput.length >= 4 && st.gateInput === Store.data.pin) {
+          if (st.gateMode === 'reveal') {
+            /* 家长解锁本题答案，回到做题界面 */
+            st.revealed = true;
+            st.gateMode = 'parent';
+            st.view = 'quiz';
+          } else {
+            st.unlocked = true;
+            st.view = 'parent';
+          }
+          st.gateInput = '';
+          self.render();
+          return;
+        }
+        if (st.gateInput.length >= 6 && st.gateInput !== Store.data.pin) {
+          FX.toast('密码不对', 'warn');
+          st.gateInput = '';
+          Sound.wrong();
+        }
+        self.render();
+      }
+
+      return el('div', { class: 'page center' }, [
+        el('div', { class: 'card gate' }, [
+          el('div', { class: 'card-title big-title', text: '👨‍👩‍👧 家长模式' }),
+          el('div', { class: 'muted', text: '请输入家长密码（默认 0000）' }),
+          dots,
+          el('div', { class: 'pad pin-pad' }, ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'del'].map(function (k) {
+            return el('button', {
+              class: 'pad-key' + (k === 'clear' || k === 'del' ? ' pad-fn' : ''),
+              text: k === 'clear' ? '清空' : (k === 'del' ? '⌫' : k),
+              onclick: function () { press(k); }
+            });
+          })),
+          el('button', { class: 'btn-ghost', text: '返回', onclick: function () {
+            self.state.view = 'home'; self.render();
+          } })
+        ])
+      ]);
+    },
+
+    /* ---------- 家长面板 ---------- */
+    viewParent: function () {
+      var d = Store.data, self = this;
+
+      function beanRow(delta) {
+        return el('button', {
+          class: 'btn-ghost small', text: (delta > 0 ? '+' : '') + delta,
+          onclick: function () {
+            Sound.click();
+            Store.addBeans(delta, '家长手动调整');
+            FX.toast((delta > 0 ? '加了 ' : '减了 ') + Math.abs(delta) + ' 颗豆');
+            self.render();
+          }
+        });
+      }
+
+      var customInput = el('input', {
+        class: 'input', type: 'tel', inputmode: 'numeric', placeholder: '数量',
+        style: { width: '110px' }
+      });
+
+      var rateInput = el('input', {
+        class: 'input', type: 'tel', inputmode: 'numeric', value: String(d.pointsPerBean),
+        style: { width: '80px' }
+      });
+
+      var goalNameInput = el('input', { class: 'input', type: 'text', value: d.goalName, placeholder: '比如：去游乐园' });
+      var goalBeanInput = el('input', {
+        class: 'input', type: 'tel', inputmode: 'numeric', value: String(d.goalBeans),
+        style: { width: '100px' }
+      });
+
+      var pinInput = el('input', {
+        class: 'input', type: 'tel', inputmode: 'numeric', placeholder: '新的 4~6 位数字',
+        style: { width: '180px' }
+      });
+
+      var exportBox = el('textarea', { class: 'textarea', rows: 5, readonly: true });
+      exportBox.value = Store.exportText();
+      var importBox = el('textarea', { class: 'textarea', rows: 4, placeholder: '把备份内容粘贴到这里，再点「导入」' });
+
+      var kidNameInput = el('input', {
+        class: 'input', type: 'text', value: d.kidName, placeholder: '比如：小明'
+      });
+
+      var reportBox = el('textarea', { class: 'textarea', rows: 3, readonly: true });
+      reportBox.value = Store.reportUrl();
+
+      var cqQ = el('input', { class: 'input', type: 'text', placeholder: '题干（例如：一个数除以 7 余 3……）' });
+      var cqA = el('input', {
+        class: 'input', type: 'tel', inputmode: 'numeric', placeholder: '答案（只能填数字）',
+        style: { maxWidth: '180px' }
+      });
+      var cqS = el('select', { class: 'input', style: { maxWidth: '150px' } }, [
+        el('option', { value: '1', text: '★ 简单（1 分）' }),
+        el('option', { value: '2', text: '★★ 中等（2 分）', selected: true }),
+        el('option', { value: '3', text: '★★★ 挑战（3 分）' })
+      ]);
+      var cqE = el('input', { class: 'input', type: 'text', placeholder: '解题思路（可留空）' });
+
+      return el('div', { class: 'page' }, [
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '🫘 豆子管理' }),
+          el('div', { class: 'parent-beans' }, [
+            el('span', { class: 'bean-icon', html: beanIcon(38) }),
+            el('span', { class: 'parent-bean-num', text: U.fmt(d.beans) + ' 颗' })
+          ]),
+          el('div', { class: 'btn-row' }, [beanRow(1), beanRow(5), beanRow(10), beanRow(-1), beanRow(-5)]),
+          el('div', { class: 'field-row' }, [
+            el('span', { class: 'field-label', text: '自定义增减：' }),
+            customInput,
+            el('button', {
+              class: 'btn-ghost small', text: '加',
+              onclick: function () {
+                var n = parseInt(customInput.value, 10);
+                if (!n) { FX.toast('请输入数字', 'warn'); return; }
+                Store.addBeans(n, '家长手动调整');
+                FX.toast('加了 ' + n + ' 颗豆');
+                self.render();
+              }
+            }),
+            el('button', {
+              class: 'btn-ghost small', text: '减',
+              onclick: function () {
+                var n = parseInt(customInput.value, 10);
+                if (!n) { FX.toast('请输入数字', 'warn'); return; }
+                Store.addBeans(-n, '家长手动调整');
+                FX.toast('减了 ' + n + ' 颗豆');
+                self.render();
+              }
+            })
+          ]),
+          el('div', { class: 'muted small', text: '「减」会自动停在 0，不会变成负数。' })
+        ]),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '⚖️ 奖励规则' }),
+          el('div', { class: 'field-row' }, [
+            el('span', { class: 'field-label', text: '每' }),
+            rateInput,
+            el('span', { class: 'field-label', text: '分换 1 颗豆' }),
+            el('button', {
+              class: 'btn-ghost small', text: '保存',
+              onclick: function () {
+                var n = parseInt(rateInput.value, 10);
+                if (!n || n < 1) { FX.toast('至少 1 分', 'warn'); return; }
+                Store.setRate(n);
+                FX.toast('已设为每 ' + n + ' 分 1 颗豆');
+                self.render();
+              }
+            })
+          ]),
+          el('div', { class: 'muted small', text: '题目分值：★ = 1 分，★★ = 2 分，★★★ = 3 分。设为 2 就是「做对 2 道基础题得 1 颗豆」。' })
+        ]),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '🎯 奖励目标' }),
+          el('div', { class: 'field-row' }, [
+            el('span', { class: 'field-label', text: '目标名：' }), goalNameInput
+          ]),
+          el('div', { class: 'field-row' }, [
+            el('span', { class: 'field-label', text: '需要豆数：' }), goalBeanInput,
+            el('button', {
+              class: 'btn-ghost small', text: '保存',
+              onclick: function () {
+                Store.setGoal(goalNameInput.value, parseInt(goalBeanInput.value, 10) || 0);
+                FX.toast('目标已保存');
+                self.render();
+              }
+            })
+          ])
+        ]),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '🔒 答案权限' }),
+          el('div', { class: 'muted small', text: '孩子做完题以后，能不能看到正确答案和解题思路。' }),
+          el('div', { class: 'chips', style: { marginTop: '8px' } }, [
+            ['strict', '严格：只有家长能看'],
+            ['gentle', '温和：答错后给孩子看']
+          ].map(function (m) {
+            return el('button', {
+              class: 'chip' + (d.answerMode === m[0] ? ' on' : ''),
+              text: m[1],
+              onclick: function () {
+                Sound.click();
+                Store.setAnswerMode(m[0]);
+                FX.toast('已切换');
+                self.render();
+              }
+            });
+          })),
+          el('div', { class: 'muted small', text: '严格模式下孩子只看到「对 / 没做对」，还能重试一次；' +
+            '你想看答案时，在做题界面点「家长查看答案」输密码就行。' })
+        ]),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '👶 孩子名字' }),
+          el('div', { class: 'field-row' }, [
+            kidNameInput,
+            el('button', {
+              class: 'btn-ghost small', text: '保存',
+              onclick: function () {
+                Store.setKidName(kidNameInput.value);
+                FX.toast('已保存');
+                self.render();
+              }
+            })
+          ])
+        ]),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '📤 家长报告（任何电脑都能看）' }),
+          el('div', { class: 'muted small', text: '生成一条链接，复制到微信或邮件里，' +
+            '在任何一台电脑、手机上打开都能看到孩子的进度 —— 只读，而且不需要服务器，数据全在链接里。' }),
+          reportBox,
+          el('div', { class: 'btn-row' }, [
+            el('button', {
+              class: 'btn-ghost small', text: '刷新',
+              onclick: function () { reportBox.value = Store.reportUrl(); FX.toast('已刷新'); }
+            }),
+            el('button', {
+              class: 'btn-ghost small', text: '复制链接',
+              onclick: function () {
+                reportBox.value = Store.reportUrl();
+                reportBox.select();
+                try { document.execCommand('copy'); FX.toast('已复制，发给别人就能看'); }
+                catch (e) { FX.toast('请长按选择复制', 'warn'); }
+              }
+            }),
+            el('button', {
+              class: 'btn-ghost small', text: '本机预览',
+              onclick: function () {
+                window.location.hash = '#report=' + Store.reportCode();
+                window.location.reload();
+              }
+            })
+          ])
+        ]),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '✍️ 家长自己出题' }),
+          el('div', { class: 'muted small', text: '可以把孩子正在用的练习册上的题录入进来（答案只有你能看到）。' +
+            '注意：答案必须是数字，因为孩子是用数字键盘作答的。' }),
+          cqQ, cqA,
+          el('div', { class: 'field-row' }, [
+            el('span', { class: 'field-label', text: '难度：' }), cqS,
+            el('button', {
+              class: 'btn-ghost small', text: '添加这道题',
+              onclick: function () {
+                var err = Store.addCustom(cqQ.value, cqA.value, cqS.value, cqE.value);
+                if (err) { FX.toast(err, 'warn'); return; }
+                FX.toast('已添加');
+                self.render();
+              }
+            })
+          ]),
+          cqE,
+          d.custom.length
+            ? el('div', { class: 'custom-list' }, d.custom.map(function (c, i) {
+                return el('div', { class: 'custom-item' }, [
+                  el('div', { class: 'custom-q', text: c.q }),
+                  el('div', { class: 'custom-meta' }, [
+                    el('span', { text: '答案 ' + c.a + ' · ' + '★'.repeat(c.s) }),
+                    el('button', {
+                      class: 'btn-danger small', text: '删除',
+                      onclick: function () { Store.removeCustom(i); self.render(); }
+                    })
+                  ])
+                ]);
+              }))
+            : el('div', { class: 'muted small', text: '还没有自己出的题。' })
+        ]),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '📊 学习统计' }),
+          el('div', { class: 'stats-grid' }, [
+            el('div', { class: 'stat' }, [el('b', { text: String(d.stats.total) }), el('span', { text: '总题数' })]),
+            el('div', { class: 'stat' }, [el('b', { text: String(d.stats.correct) }), el('span', { text: '答对' })]),
+            el('div', { class: 'stat' }, [el('b', { text: Store.accuracy() + '%' }), el('span', { text: '正确率' })]),
+            el('div', { class: 'stat' }, [el('b', { text: String(d.bestStreak) }), el('span', { text: '最长连对' })])
+          ]),
+          el('div', { class: 'stars-stat' }, [
+            this.starStat('★ 简单', d.stats.s1),
+            this.starStat('★★ 中等', d.stats.s2),
+            this.starStat('★★★ 挑战', d.stats.s3)
+          ])
+        ]),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '🔒 家长密码' }),
+          el('div', { class: 'field-row' }, [
+            pinInput,
+            el('button', {
+              class: 'btn-ghost small', text: '修改',
+              onclick: function () {
+                if (Store.setPin(pinInput.value)) { FX.toast('密码已修改'); pinInput.value = ''; }
+                else FX.toast('密码要 4~6 位数字', 'warn');
+              }
+            })
+          ]),
+          el('div', { class: 'field-row' }, [
+            el('button', {
+              class: 'btn-ghost small', text: (d.sound ? '🔔 音效：开' : '🔕 音效：关'),
+              onclick: function () { Store.setSound(!Store.data.sound); self.render(); }
+            }),
+            el('button', {
+              class: 'btn-ghost small', text: '退出家长模式',
+              onclick: function () { self.state.unlocked = false; self.state.view = 'home'; self.render(); }
+            })
+          ])
+        ]),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '💾 备份与重置' }),
+          el('div', { class: 'muted small', text: '导出的内容可以复制保存；换设备时粘贴到下面再导入。' }),
+          exportBox,
+          el('div', { class: 'btn-row' }, [
+            el('button', {
+              class: 'btn-ghost small', text: '复制导出内容',
+              onclick: function () {
+                exportBox.select();
+                try { document.execCommand('copy'); FX.toast('已复制'); }
+                catch (e) { FX.toast('请长按选择复制', 'warn'); }
+              }
+            }),
+            el('button', {
+              class: 'btn-ghost small', text: '刷新导出内容',
+              onclick: function () { exportBox.value = Store.exportText(); FX.toast('已刷新'); }
+            })
+          ]),
+          importBox,
+          el('div', { class: 'btn-row' }, [
+            el('button', {
+              class: 'btn-ghost small', text: '导入',
+              onclick: function () {
+                var err = Store.importText(importBox.value);
+                if (err) FX.toast(err, 'warn');
+                else { FX.toast('导入成功'); self.render(); }
+              }
+            }),
+            el('button', {
+              class: 'btn-danger small', text: '清空所有进度',
+              onclick: function () {
+                if (window.confirm('确定要清空所有豆子和记录吗？这个操作不能撤销。')) {
+                  Store.reset();
+                  FX.toast('已清空');
+                  self.state.view = 'home';
+                  self.render();
+                }
+              }
+            })
+          ])
+        ])
+      ]);
+    }
+  };
+
+  G.App = App;
+})(window.G);
+
+</script>
+  <script>
+/* ===== main.js ===== */
+/* 奥数豆豆 — 启动 */
+window.G = window.G || {};
+(function (G) {
+  'use strict';
+  function boot() {
+    try {
+      G.App.start();
+      G.booted = true;
+    } catch (e) {
+      var v = document.getElementById('view');
+      if (v) v.textContent = '启动失败：' + e.message;
+      if (window.console) console.error(e);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})(window.G);
+
+</script>
+</body>
+</html>

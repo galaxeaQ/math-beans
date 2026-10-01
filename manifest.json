@@ -1,0 +1,25 @@
+{
+  "name": "奥数豆豆",
+  "short_name": "奥数豆豆",
+  "description": "四年级到五年级奥数练习，做对题目攒豆子",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fdf8ef",
+  "theme_color": "#fdf8ef",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
