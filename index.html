@@ -2,7 +2,7 @@
 <!--
   奥数豆豆 · Math Beans（托管版）
   iPad 上用 Safari 打开 → 分享 → 添加到主屏幕，就是一个全屏 App。
-  生成时间：2026/10/1 20:57:47
+  生成时间：2026/10/2 18:44:56
 -->
 <html lang="zh-CN">
 <head>
@@ -395,6 +395,46 @@ button { font-family: inherit; }
 
 .tab-icon { display: block; line-height: 0; }
 .inline-bean { display: inline-block; vertical-align: -4px; line-height: 0; }
+
+/* ---------------- 云同步 ---------------- */
+.cloud-status {
+  font-size: 14.5px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  margin: 8px 0;
+  background: #f4f1ea;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.cloud-ok { background: var(--good-soft); color: #3f8f45; }
+.cloud-error { background: var(--bad-soft); color: #b8523a; }
+.cloud-syncing { background: #eef4fb; color: #4a7ba8; }
+.cloud-idle { background: #fdf6e8; color: var(--accent-deep); }
+.cloud-off { background: #f4f1ea; color: var(--ink-soft); }
+
+.howto { margin-top: 10px; }
+
+.howto summary {
+  cursor: pointer;
+  font-size: 15px;
+  color: #4a7ba8;
+  padding: 8px 0;
+  list-style: none;
+}
+
+.howto summary::-webkit-details-marker { display: none; }
+
+.howto-body {
+  font-size: 14.5px;
+  line-height: 1.7;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.howto-body .textarea { margin-top: 4px; }
 
 /* ---------------- 只读报告 ---------------- */
 .kv { display: flex; flex-direction: column; }
@@ -1779,6 +1819,11 @@ window.G = window.G || {};
       kidName: '',          /* 孩子名字（报告里会用到） */
       answerMode: 'strict', /* 答案权限：strict 只有家长能看 / gentle 答错后给孩子看 */
       custom: [],           /* 家长自己录入的题目 [{q, a, s, e}] */
+      /* 云同步（可选，不填就纯本地） */
+      cloudUrl: '',
+      cloudKey: '',
+      cloudCode: '',
+      updatedAt: 0,         /* 本机数据最后一次改动的时间，用来和云端比谁新 */
       stats: {
         total: 0, correct: 0,
         s1: { t: 0, c: 0 },
@@ -1827,8 +1872,12 @@ window.G = window.G || {};
       return this.data;
     },
 
-    save: function () {
+    save: function (opts) {
+      opts = opts || {};
+      if (!opts.noTouch) this.data.updatedAt = Date.now();
       try { window.localStorage.setItem(KEY, JSON.stringify(this.data)); } catch (e) { /* 忽略 */ }
+      /* 每次改动后自动排一次云同步（没配置云同步时什么都不做） */
+      if (!opts.noPush && G.Cloud && G.Cloud.schedulePush) G.Cloud.schedulePush();
     },
 
     reset: function () {
@@ -2046,10 +2095,272 @@ window.G = window.G || {};
     reportUrl: function () {
       var base = String(window.location.href).split('#')[0].split('?')[0];
       return base + '#report=' + this.reportCode();
+    },
+
+    /* ---------------- 云同步 ---------------- */
+
+    /* 要上传到云端的字段（不含云配置本身，避免互相覆盖） */
+    snapshot: function () {
+      var d = this.data;
+      return {
+        v: 1,
+        beans: d.beans,
+        points: d.points,
+        pointsPerBean: d.pointsPerBean,
+        goalName: d.goalName,
+        goalBeans: d.goalBeans,
+        stats: d.stats,
+        log: d.log,
+        streak: d.streak,
+        bestStreak: d.bestStreak,
+        custom: d.custom,
+        kidName: d.kidName,
+        answerMode: d.answerMode,
+        sound: d.sound,
+        pin: d.pin,
+        updatedAt: d.updatedAt
+      };
+    },
+
+    /* 把云端的整份数据搬到本机（保留本机的云配置） */
+    adopt: function (remote, remoteAt) {
+      if (!remote || typeof remote.beans !== 'number') return false;
+      var snap = this.snapshot();
+      for (var k in remote) {
+        if (k === 'v') continue;
+        if (!Object.prototype.hasOwnProperty.call(snap, k)) continue;
+        if (remote[k] === undefined || remote[k] === null) continue;
+        snap[k] = remote[k];
+      }
+      var keep = { cloudUrl: this.data.cloudUrl, cloudKey: this.data.cloudKey, cloudCode: this.data.cloudCode };
+      var base = fresh();
+      for (var k2 in snap) if (snap[k2] !== undefined) base[k2] = snap[k2];
+      base.cloudUrl = keep.cloudUrl;
+      base.cloudKey = keep.cloudKey;
+      base.cloudCode = keep.cloudCode;
+      base.updatedAt = remoteAt || Date.now();
+      this.data = base;
+      this.save({ noTouch: true, noPush: true });
+      return true;
+    },
+
+    setCloud: function (url, key, code) {
+      this.data.cloudUrl = String(url || '').trim();
+      this.data.cloudKey = String(key || '').trim();
+      this.data.cloudCode = String(code || '').trim();
+      this.save();
+    },
+
+    cloudConfigured: function () {
+      var d = this.data;
+      return !!(d.cloudUrl && d.cloudKey && d.cloudCode);
+    },
+
+    /* 生成一段随机家庭同步码（几台设备填一样的就行） */
+    newCloudCode: function () {
+      var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      var out = '';
+      for (var i = 0; i < 12; i++) out += chars[Math.floor(Math.random() * chars.length)];
+      return out;
+    },
+
+    /* ---------------- 手动同步码（不想配云的时候用这个） ---------------- */
+
+    /* 把本机全部数据编码成一段可以复制走的文本 */
+    syncCode: function () {
+      return U.b64enc(JSON.stringify(this.snapshot()));
+    },
+
+    /* 用别人给的同步码覆盖本机（保留本机的云配置） */
+    applySyncCode: function (code) {
+      try {
+        var o = JSON.parse(U.b64dec(String(code || '').trim()));
+        if (!o || typeof o.beans !== 'number') return '同步码无效';
+        this.adopt(o, o.updatedAt || Date.now());
+        return null;
+      } catch (e) {
+        return '同步码无效';
+      }
     }
   };
 
   G.Store = Store;
+})(window.G);
+
+</script>
+  <script>
+/* ===== cloud.js ===== */
+/* 奥数豆豆 — 云同步（可选）
+ *
+ * 不配置的时候完全不影响使用（数据照旧存在本机）。
+ * 配置之后，多台设备（iPad + 电脑）就能共用同一份豆子数据。
+ *
+ * 用的是 Supabase 的免费数据库（它给浏览器的 anon key 本来就是公开的，
+ * 放在 App 设置里是安全的；真正的门锁是「家庭同步码」）。
+ *
+ * 同步策略：谁的 updatedAt 更新就用谁的。孩子主要在 iPad 上做题，
+ * 家长电脑上通常只是看看或偶尔加减豆子，这个策略足够稳。
+ */
+window.G = window.G || {};
+(function (G) {
+  'use strict';
+  var U = G.U, S = G.Store;
+
+  var Cloud = {
+    status: 'off',       /* off | idle | syncing | ok | error */
+    message: '',
+    _timer: null,
+    _busy: false,
+    _applying: false,    /* 正在把云端数据写到本机时，不要反过来推回去 */
+
+    configured: function () {
+      var d = S.data;
+      return !!(d.cloudUrl && d.cloudKey && d.cloudCode);
+    },
+
+    endpoint: function () {
+      var base = String(S.data.cloudUrl || '').trim().replace(/\/+$/, '');
+      if (!/^https?:\/\//i.test(base)) base = 'https://' + base;
+      return base + '/rest/v1/beans';
+    },
+
+    headers: function (extra) {
+      var h = {
+        apikey: S.data.cloudKey,
+        Authorization: 'Bearer ' + S.data.cloudKey,
+        'Content-Type': 'application/json'
+      };
+      if (extra) for (var k in extra) h[k] = extra[k];
+      return h;
+    },
+
+    setStatus: function (st, msg) {
+      this.status = st;
+      this.message = msg || '';
+      if (G.App && G.App.onCloudStatus) G.App.onCloudStatus();
+    },
+
+    /* 把 HTTP 状态码翻译成人话，方便家长自己排查 */
+    explainError: function (status) {
+      if (status === 404) return '找不到数据表 beans —— SQL 那段还没跑成功（或者跑到了别的项目里）';
+      if (status === 401 || status === 403) return 'anon key 不对，或者 SQL 里的策略没建好';
+      if (status === 400) return '请求被数据库拒绝，通常是 SQL 里的策略没建好';
+      if (status === 0) return '连不上网络';
+      return 'HTTP ' + status;
+    },
+
+    init: function () {
+      if (!this.configured()) {
+        this.setStatus('off', '未配置（数据只存在这台设备上）');
+        return;
+      }
+      this.setStatus('idle', '已配置，准备同步');
+      this.pull();
+    },
+
+    /* 本机改了数据 → 1.5 秒后推上去（合并短时间内的多次改动） */
+    schedulePush: function () {
+      if (this._applying || !this.configured()) return;
+      var self = this;
+      if (this._timer) clearTimeout(this._timer);
+      this._timer = setTimeout(function () { self.push(); }, 1500);
+    },
+
+    pull: function (cb) {
+      var self = this;
+      if (!this.configured()) { if (cb) cb(false, '未配置'); return; }
+      if (this._busy) return;
+      this._busy = true;
+      this.setStatus('syncing', '正在从云端读取…');
+
+      var url = this.endpoint() + '?code=eq.' + encodeURIComponent(S.data.cloudCode) + '&select=*';
+      fetch(url, { headers: this.headers() })
+        .then(function (r) {
+          if (!r.ok) throw new Error(self.explainError(r.status));
+          return r.json();
+        })
+        .then(function (rows) {
+          self._busy = false;
+          if (!rows || !rows.length) {
+            /* 云端还没有这份数据：把本机的推上去当种子 */
+            self.setStatus('idle', '云端还没有数据，正在上传本机的…');
+            self.push();
+            return;
+          }
+          var remote = rows[0];
+          var remoteAt = Date.parse(remote.updated_at) || 0;
+          var localAt = S.data.updatedAt || 0;
+          if (remoteAt > localAt + 800) {
+            self.applyRemote(remote.data, remoteAt);
+            self.setStatus('ok', '已用云端数据更新本机（' + U.timeText(remoteAt) + '）');
+          } else {
+            self.setStatus('idle', '本机更新，正在上传…');
+            self.push();
+          }
+          if (cb) cb(true);
+        })
+        .catch(function (e) {
+          self._busy = false;
+          self.setStatus('error', '读取失败：' + e.message);
+          if (cb) cb(false, e.message);
+        });
+    },
+
+    push: function (cb) {
+      var self = this;
+      if (!this.configured()) { if (cb) cb(false, '未配置'); return; }
+      if (this._busy) return;
+      this._busy = true;
+      this.setStatus('syncing', '正在上传到云端…');
+
+      var d = S.data;
+      var row = {
+        code: d.cloudCode,
+        data: S.snapshot(),
+        updated_at: new Date(d.updatedAt || Date.now()).toISOString()
+      };
+      fetch(this.endpoint() + '?on_conflict=code', {
+        method: 'POST',
+        headers: this.headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
+        body: JSON.stringify(row)
+      })
+        .then(function (r) {
+          self._busy = false;
+          if (!r.ok) throw new Error(self.explainError(r.status));
+          self.setStatus('ok', '已同步（' + U.timeText(Date.now()) + '）');
+          if (cb) cb(true);
+        })
+        .catch(function (e) {
+          self._busy = false;
+          self.setStatus('error', '上传失败：' + e.message);
+          if (cb) cb(false, e.message);
+        });
+    },
+
+    applyRemote: function (remote, remoteAt) {
+      this._applying = true;
+      try {
+        S.adopt(remote, remoteAt);
+      } finally {
+        this._applying = false;
+      }
+    },
+
+    /* 家长在设置里点「保存并同步」 */
+    saveConfig: function (url, key, code, cb) {
+      S.setCloud(url, key, code);
+      this._busy = false;
+      this._timer = null;
+      if (!this.configured()) {
+        this.setStatus('off', '未配置（数据只存在这台设备上）');
+        if (cb) cb(false);
+        return;
+      }
+      this.pull(cb);
+    }
+  };
+
+  G.Cloud = Cloud;
 })(window.G);
 
 </script>
@@ -2371,6 +2682,7 @@ window.G = window.G || {};
       gateInput: '',
       gateMode: 'parent',   /* parent 进家长面板 / reveal 解锁本题答案 */
       unlocked: false,
+      openCloudHelp: false, /* 展开「怎么开通」的说明 */
       report: null          /* 通过报告链接进来时，这里放报告数据 */
     },
     root: null,
@@ -2405,6 +2717,8 @@ window.G = window.G || {};
       if (params.has('demo')) this.seedDemoData();
       if (params.has('grade')) this.state.opt.grade = params.get('grade');
       if (params.has('stars')) this.state.opt.stars = params.get('stars');
+      /* 截图/调试用：直接把「怎么开通」展开 */
+      if (params.has('cloudhelp')) this.state.openCloudHelp = true;
 
       var self = this;
       document.addEventListener('touchstart', function once() {
@@ -2425,6 +2739,18 @@ window.G = window.G || {};
       if (params.has('auto')) this.autoAnswer(params.get('auto'));
       /* 截图用：把页面滚到指定位置（长页面截图） */
       if (params.has('scroll')) this.root.scrollTop = parseInt(params.get('scroll'), 10) || 0;
+
+      /* 配置过云同步的话，启动时拉一次（未配置则什么都不做） */
+      if (G.Cloud) G.Cloud.init();
+    },
+
+    /* 云端状态变化时只更新状态文字，不整体重绘（避免打断家长正在输入的内容） */
+    onCloudStatus: function () {
+      var box = document.querySelector('.cloud-status');
+      if (box && G.Cloud) {
+        box.textContent = G.Cloud.message || '';
+        box.className = 'cloud-status cloud-' + G.Cloud.status;
+      }
     },
 
     autoAnswer: function (mode) {
@@ -3124,6 +3450,43 @@ window.G = window.G || {};
       ]);
       var cqE = el('input', { class: 'input', type: 'text', placeholder: '解题思路（可留空）' });
 
+      /* ---- 云同步相关控件 ---- */
+      var cloudUrlInput = el('input', {
+        class: 'input', type: 'text', value: d.cloudUrl,
+        placeholder: 'https://xxxx.supabase.co'
+      });
+      var cloudKeyInput = el('input', {
+        class: 'input', type: 'text', value: d.cloudKey,
+        placeholder: 'anon public key（一长串）'
+      });
+      var cloudCodeInput = el('input', {
+        class: 'input', type: 'text', value: d.cloudCode,
+        placeholder: '家庭同步码，例如 BEAN2024HOME'
+      });
+
+      var SQL = [
+        'create table if not exists beans (',
+        '  code text primary key,',
+        '  data jsonb not null,',
+        '  updated_at timestamptz not null default now()',
+        ');',
+        'alter table beans enable row level security;',
+        'drop policy if exists "family" on beans;',
+        'create policy "family" on beans for all using (true) with check (true);'
+      ].join('\n');
+      var sqlBox = el('textarea', { class: 'textarea', rows: 9, readonly: true });
+      sqlBox.value = SQL;
+
+      var syncBox = el('textarea', { class: 'textarea', rows: 3, readonly: true });
+      var syncImport = el('textarea', {
+        class: 'textarea', rows: 3,
+        placeholder: '把另一台设备生成的同步码粘贴到这里，再点下面的按钮'
+      });
+
+      function cloudBtn(text, fn) {
+        return el('button', { class: 'btn-ghost small', text: text, onclick: fn });
+      }
+
       return el('div', { class: 'page' }, [
         el('div', { class: 'card' }, [
           el('div', { class: 'card-title', text: '🫘 豆子管理' }),
@@ -3193,6 +3556,89 @@ window.G = window.G || {};
                 FX.toast('目标已保存');
                 self.render();
               }
+            })
+          ])
+        ]),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '☁️ 多设备同步（iPad 和电脑共用同一份豆子）' }),
+          el('div', { class: 'muted small', text: '不配置的话，豆子只存在这台设备上 —— 换一台设备打开就是 0。' +
+            '配置之后，几台设备填同一个「家庭同步码」，豆子就会自动同步。' }),
+          el('div', { class: 'cloud-status cloud-' + (G.Cloud ? G.Cloud.status : 'off') ,
+            text: G.Cloud ? G.Cloud.message : '' }),
+          el('div', { class: 'field-row' }, [
+            el('span', { class: 'field-label', text: '数据库网址：' }), cloudUrlInput
+          ]),
+          el('div', { class: 'field-row' }, [
+            el('span', { class: 'field-label', text: 'anon key：' }), cloudKeyInput
+          ]),
+          el('div', { class: 'field-row' }, [
+            el('span', { class: 'field-label', text: '家庭同步码：' }), cloudCodeInput,
+            cloudBtn('随机生成', function () {
+              cloudCodeInput.value = Store.newCloudCode();
+              FX.toast('已生成，几台设备填同一个');
+            })
+          ]),
+          el('div', { class: 'btn-row' }, [
+            cloudBtn('保存并同步', function () {
+              G.Cloud.saveConfig(cloudUrlInput.value, cloudKeyInput.value, cloudCodeInput.value,
+                function () { self.render(); });
+              FX.toast('正在同步…');
+            }),
+            cloudBtn('立即拉取', function () {
+              G.Cloud.pull(function () { self.render(); });
+            }),
+            cloudBtn('立即上传', function () {
+              G.Cloud.push(function () { self.render(); });
+            })
+          ]),
+          (function () {
+            var box = el('details', { class: 'howto' }, [
+              el('summary', { text: '▼ 怎么开通（免费，约 3 分钟，只需做一次）' }),
+              el('div', { class: 'howto-body' }, [
+                el('div', { text: '1. 打开 supabase.com 注册（免费），新建一个项目（区域选近的）' }),
+                el('div', { text: '2. 左边点 SQL Editor → New query，把下面这段全部粘进去，点 Run：' }),
+                sqlBox,
+                el('button', {
+                  class: 'btn-ghost small', text: '复制这段 SQL',
+                  onclick: function () {
+                    sqlBox.select();
+                    try { document.execCommand('copy'); FX.toast('SQL 已复制'); }
+                    catch (e) { FX.toast('请长按选择复制', 'warn'); }
+                  }
+                }),
+                el('div', { text: '3. 左边点 Project Settings（齿轮）→ API，复制 Project URL 和 anon public key' }),
+                el('div', { text: '4. 填到上面三个框里，点「保存并同步」' }),
+                el('div', { text: '5. 在 iPad 上打开同一个网址，填一样的三项，就同步了' }),
+                el('div', { class: 'muted small', text: '说明：anon key 本来就是给浏览器用的公开钥匙，放在这里不危险；' +
+                  '真正的门锁是「家庭同步码」，请设长一点、别用太好猜的。' })
+              ])
+            ]);
+            if (self.state.openCloudHelp) box.setAttribute('open', '');
+            return box;
+          })()
+        ]),
+
+        el('div', { class: 'card' }, [
+          el('div', { class: 'card-title', text: '🔁 手动同步码（不想配云的时候用这个）' }),
+          el('div', { class: 'muted small', text: '在 iPad 上生成一段同步码，发到电脑上粘贴进来，' +
+            '两台设备的豆子就一样了。反过来也成立。' }),
+          el('div', { class: 'btn-row' }, [
+            cloudBtn('生成并复制同步码', function () {
+              syncBox.value = Store.syncCode();
+              syncBox.select();
+              try { document.execCommand('copy'); FX.toast('已复制，去另一台设备粘贴'); }
+              catch (e) { FX.toast('请长按选择复制', 'warn'); }
+            })
+          ]),
+          syncBox,
+          syncImport,
+          el('div', { class: 'btn-row' }, [
+            cloudBtn('用这段同步码覆盖本机', function () {
+              var err = Store.applySyncCode(syncImport.value);
+              if (err) { FX.toast(err, 'warn'); return; }
+              FX.toast('已导入，豆子已更新');
+              self.render();
             })
           ])
         ]),
