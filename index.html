@@ -2,7 +2,7 @@
 <!--
   奥数豆豆 · Math Beans（托管版）
   iPad 上用 Safari 打开 → 分享 → 添加到主屏幕，就是一个全屏 App。
-  生成时间：2026/10/2 19:12:15
+  生成时间：2026/10/2 19:14:22
 -->
 <html lang="zh-CN">
 <head>
@@ -2148,7 +2148,10 @@ window.G = window.G || {};
       this.data.cloudUrl = String(url || '').trim();
       this.data.cloudKey = String(key || '').trim();
       this.data.cloudCode = String(code || '').trim();
-      this.save();
+      /* 注意：改配置不是改数据，绝不能刷新 updatedAt。
+         否则一台空设备只要填了配置就会变成「数据更新的一方」，
+         同步时会把孩子真实的豆子覆盖成 0。 */
+      this.save({ noTouch: true, noPush: true });
     },
 
     cloudConfigured: function () {
@@ -2280,6 +2283,24 @@ window.G = window.G || {};
       this._timer = setTimeout(function () { self.push(); }, 1500);
     },
 
+    /* 这次同步该听谁的？返回 'adopt'（云端赢）或 'push'（本机赢）
+     *
+     * 这里有一条关键保护：**云端是空数据时，绝不能覆盖本机已有的豆子**。
+     * 否则会出现这种丢数据的情况：
+     *   家长先在电脑上打开配置链接 → 电脑是空数据但时间戳是「现在」
+     *   → 云端被写成 0 颗豆 → iPad 以为云端更新 → 孩子的豆子被清零。
+     * 判断逻辑单独抽出来，方便测试。
+     */
+    decide: function (remote, remoteAt, local, localAt) {
+      if (!remote || typeof remote.beans !== 'number') return 'push';
+      var remoteEmpty = (!remote.beans) &&
+        !(remote.stats && remote.stats.total);
+      var localHasData = !!(local && (local.beans > 0 || (local.stats && local.stats.total > 0)));
+      if (remoteEmpty && localHasData) return 'push';
+      if (remoteAt > (localAt || 0) + 800) return 'adopt';
+      return 'push';
+    },
+
     pull: function (cb) {
       var self = this;
       if (!this.configured()) { if (cb) cb(false, '未配置'); return; }
@@ -2304,7 +2325,8 @@ window.G = window.G || {};
           var remote = rows[0];
           var remoteAt = Date.parse(remote.updated_at) || 0;
           var localAt = S.data.updatedAt || 0;
-          if (remoteAt > localAt + 800) {
+          var who = self.decide(remote.data, remoteAt, S.data, localAt);
+          if (who === 'adopt') {
             self.applyRemote(remote.data, remoteAt);
             self.setStatus('ok', '已用云端数据更新本机（' + U.timeText(remoteAt) + '）');
           } else {
