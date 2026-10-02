@@ -2,7 +2,7 @@
 <!--
   奥数豆豆 · Math Beans（托管版）
   iPad 上用 Safari 打开 → 分享 → 添加到主屏幕，就是一个全屏 App。
-  生成时间：2026/10/2 19:07:08
+  生成时间：2026/10/2 19:12:15
 -->
 <html lang="zh-CN">
 <head>
@@ -2718,7 +2718,10 @@ window.G = window.G || {};
         var conf = Store.parseCloudLink(hash.slice(7));
         if (conf) {
           Store.setCloud(conf.u, conf.k, conf.c);
-          try { window.history.replaceState(null, '', window.location.pathname); } catch (e) { }
+          /* 配置好了就把 #cloud=... 从地址栏去掉（免得刷新时重复应用），但要保留 ?查询参数 */
+          try {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          } catch (e) { }
           setTimeout(function () { FX.toast('云同步已配置好，正在连接…'); }, 400);
         } else {
           setTimeout(function () { FX.toast('配置链接无效', 'warn'); }, 400);
