@@ -2,7 +2,7 @@
 <!--
   奥数豆豆 · Math Beans（托管版）
   iPad 上用 Safari 打开 → 分享 → 添加到主屏幕，就是一个全屏 App。
-  生成时间：2026/10/2 18:44:56
+  生成时间：2026/10/2 19:07:08
 -->
 <html lang="zh-CN">
 <head>
@@ -2164,6 +2164,18 @@ window.G = window.G || {};
       return out;
     },
 
+    /* 一键配置链接用的编码：把网址 + anon key + 同步码打包成一段字符串 */
+    cloudLink: function (url, key, code) {
+      return U.b64enc(JSON.stringify({ u: url, k: key, c: code }));
+    },
+    parseCloudLink: function (s) {
+      try {
+        var o = JSON.parse(U.b64dec(String(s || '').trim()));
+        if (!o || !o.u || !o.k || !o.c) return null;
+        return o;
+      } catch (e) { return null; }
+    },
+
     /* ---------------- 手动同步码（不想配云的时候用这个） ---------------- */
 
     /* 把本机全部数据编码成一段可以复制走的文本 */
@@ -2221,6 +2233,8 @@ window.G = window.G || {};
     endpoint: function () {
       var base = String(S.data.cloudUrl || '').trim().replace(/\/+$/, '');
       if (!/^https?:\/\//i.test(base)) base = 'https://' + base;
+      /* 家长很可能把 Supabase 页面上的 /rest/v1/ 一起复制进来，容错一下 */
+      base = base.replace(/\/rest\/v1$/i, '').replace(/\/+$/, '');
       return base + '/rest/v1/beans';
     },
 
@@ -2697,8 +2711,21 @@ window.G = window.G || {};
       Sound.init();
       FX.init();
 
-      /* 家长报告链接：任何一台电脑打开 #report=xxx 都能只读查看进度 */
       var hash = String(window.location.hash || '');
+
+      /* 一键配置云同步：在任意设备上打开 #cloud=xxx 就把三项配置写好 */
+      if (hash.indexOf('#cloud=') === 0) {
+        var conf = Store.parseCloudLink(hash.slice(7));
+        if (conf) {
+          Store.setCloud(conf.u, conf.k, conf.c);
+          try { window.history.replaceState(null, '', window.location.pathname); } catch (e) { }
+          setTimeout(function () { FX.toast('云同步已配置好，正在连接…'); }, 400);
+        } else {
+          setTimeout(function () { FX.toast('配置链接无效', 'warn'); }, 400);
+        }
+      }
+
+      /* 家长报告链接：任何一台电脑打开 #report=xxx 都能只读查看进度 */
       var qsEarly = new URLSearchParams(window.location.search);
       var reportCode = null;
       if (hash.indexOf('#report=') === 0) reportCode = hash.slice(8);
